@@ -1,0 +1,461 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> gift
+Rule 1     gift -> question_set
+Rule 2     question_set -> question_set question
+Rule 3     question_set -> question
+Rule 4     question -> CATEGORY
+Rule 5     question -> QUESTION answer
+Rule 6     question -> QUESTION missing QUESTIONC
+Rule 7     question -> QUESTIOND
+Rule 8     missing -> LBRACKET options
+Rule 9     missing -> LBRACKET numerical
+Rule 10    answer -> LBRACKET RBRACKET
+Rule 11    answer -> LBRACKET options RBRACKET
+Rule 12    answer -> LBRACKET truefalse RBRACKET
+Rule 13    answer -> LBRACKET numerical RBRACKET
+Rule 14    answer -> MNUMERICAL numerical RBRACKET
+Rule 15    options -> options option
+Rule 16    options -> option
+Rule 17    option -> OPTION FEEDBACK
+Rule 18    option -> OPTION
+Rule 19    truefalse -> TRUE FEEDBACK
+Rule 20    truefalse -> FALSE FEEDBACK
+Rule 21    truefalse -> TRUE
+Rule 22    truefalse -> FALSE
+Rule 23    numerical -> NUMERICAL FEEDBACK
+Rule 24    numerical -> RANGE FEEDBACK
+Rule 25    numerical -> NUMERICAL
+Rule 26    numerical -> RANGE
+Rule 27    numerical -> options
+
+Terminals, with rules where they appear
+
+CATEGORY             : 4
+FALSE                : 20 22
+FEEDBACK             : 17 19 20 23 24
+LBRACKET             : 8 9 10 11 12 13
+MNUMERICAL           : 14
+NUMERICAL            : 23 25
+OPTION               : 17 18
+QUESTION             : 5 6
+QUESTIONC            : 6
+QUESTIOND            : 7
+RANGE                : 24 26
+RBRACKET             : 10 11 12 13 14
+TRUE                 : 19 21
+error                : 
+
+Nonterminals, with rules where they appear
+
+answer               : 5
+gift                 : 0
+missing              : 6
+numerical            : 9 13 14
+option               : 15 16
+options              : 8 11 15 27
+question             : 2 3
+question_set         : 1 2
+truefalse            : 12
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . gift
+    (1) gift -> . question_set
+    (2) question_set -> . question_set question
+    (3) question_set -> . question
+    (4) question -> . CATEGORY
+    (5) question -> . QUESTION answer
+    (6) question -> . QUESTION missing QUESTIONC
+    (7) question -> . QUESTIOND
+
+    CATEGORY        shift and go to state 4
+    QUESTION        shift and go to state 5
+    QUESTIOND       shift and go to state 6
+
+    gift                           shift and go to state 1
+    question_set                   shift and go to state 2
+    question                       shift and go to state 3
+
+state 1
+
+    (0) S' -> gift .
+
+
+
+state 2
+
+    (1) gift -> question_set .
+    (2) question_set -> question_set . question
+    (4) question -> . CATEGORY
+    (5) question -> . QUESTION answer
+    (6) question -> . QUESTION missing QUESTIONC
+    (7) question -> . QUESTIOND
+
+    $end            reduce using rule 1 (gift -> question_set .)
+    CATEGORY        shift and go to state 4
+    QUESTION        shift and go to state 5
+    QUESTIOND       shift and go to state 6
+
+    question                       shift and go to state 7
+
+state 3
+
+    (3) question_set -> question .
+
+    CATEGORY        reduce using rule 3 (question_set -> question .)
+    QUESTION        reduce using rule 3 (question_set -> question .)
+    QUESTIOND       reduce using rule 3 (question_set -> question .)
+    $end            reduce using rule 3 (question_set -> question .)
+
+
+state 4
+
+    (4) question -> CATEGORY .
+
+    CATEGORY        reduce using rule 4 (question -> CATEGORY .)
+    QUESTION        reduce using rule 4 (question -> CATEGORY .)
+    QUESTIOND       reduce using rule 4 (question -> CATEGORY .)
+    $end            reduce using rule 4 (question -> CATEGORY .)
+
+
+state 5
+
+    (5) question -> QUESTION . answer
+    (6) question -> QUESTION . missing QUESTIONC
+    (10) answer -> . LBRACKET RBRACKET
+    (11) answer -> . LBRACKET options RBRACKET
+    (12) answer -> . LBRACKET truefalse RBRACKET
+    (13) answer -> . LBRACKET numerical RBRACKET
+    (14) answer -> . MNUMERICAL numerical RBRACKET
+    (8) missing -> . LBRACKET options
+    (9) missing -> . LBRACKET numerical
+
+    LBRACKET        shift and go to state 10
+    MNUMERICAL      shift and go to state 11
+
+    answer                         shift and go to state 8
+    missing                        shift and go to state 9
+
+state 6
+
+    (7) question -> QUESTIOND .
+
+    CATEGORY        reduce using rule 7 (question -> QUESTIOND .)
+    QUESTION        reduce using rule 7 (question -> QUESTIOND .)
+    QUESTIOND       reduce using rule 7 (question -> QUESTIOND .)
+    $end            reduce using rule 7 (question -> QUESTIOND .)
+
+
+state 7
+
+    (2) question_set -> question_set question .
+
+    CATEGORY        reduce using rule 2 (question_set -> question_set question .)
+    QUESTION        reduce using rule 2 (question_set -> question_set question .)
+    QUESTIOND       reduce using rule 2 (question_set -> question_set question .)
+    $end            reduce using rule 2 (question_set -> question_set question .)
+
+
+state 8
+
+    (5) question -> QUESTION answer .
+
+    CATEGORY        reduce using rule 5 (question -> QUESTION answer .)
+    QUESTION        reduce using rule 5 (question -> QUESTION answer .)
+    QUESTIOND       reduce using rule 5 (question -> QUESTION answer .)
+    $end            reduce using rule 5 (question -> QUESTION answer .)
+
+
+state 9
+
+    (6) question -> QUESTION missing . QUESTIONC
+
+    QUESTIONC       shift and go to state 12
+
+
+state 10
+
+    (10) answer -> LBRACKET . RBRACKET
+    (11) answer -> LBRACKET . options RBRACKET
+    (12) answer -> LBRACKET . truefalse RBRACKET
+    (13) answer -> LBRACKET . numerical RBRACKET
+    (8) missing -> LBRACKET . options
+    (9) missing -> LBRACKET . numerical
+    (15) options -> . options option
+    (16) options -> . option
+    (19) truefalse -> . TRUE FEEDBACK
+    (20) truefalse -> . FALSE FEEDBACK
+    (21) truefalse -> . TRUE
+    (22) truefalse -> . FALSE
+    (23) numerical -> . NUMERICAL FEEDBACK
+    (24) numerical -> . RANGE FEEDBACK
+    (25) numerical -> . NUMERICAL
+    (26) numerical -> . RANGE
+    (27) numerical -> . options
+    (17) option -> . OPTION FEEDBACK
+    (18) option -> . OPTION
+
+    RBRACKET        shift and go to state 13
+    TRUE            shift and go to state 18
+    FALSE           shift and go to state 19
+    NUMERICAL       shift and go to state 20
+    RANGE           shift and go to state 21
+    OPTION          shift and go to state 22
+
+    options                        shift and go to state 14
+    truefalse                      shift and go to state 15
+    numerical                      shift and go to state 16
+    option                         shift and go to state 17
+
+state 11
+
+    (14) answer -> MNUMERICAL . numerical RBRACKET
+    (23) numerical -> . NUMERICAL FEEDBACK
+    (24) numerical -> . RANGE FEEDBACK
+    (25) numerical -> . NUMERICAL
+    (26) numerical -> . RANGE
+    (27) numerical -> . options
+    (15) options -> . options option
+    (16) options -> . option
+    (17) option -> . OPTION FEEDBACK
+    (18) option -> . OPTION
+
+    NUMERICAL       shift and go to state 20
+    RANGE           shift and go to state 21
+    OPTION          shift and go to state 22
+
+    numerical                      shift and go to state 23
+    options                        shift and go to state 24
+    option                         shift and go to state 17
+
+state 12
+
+    (6) question -> QUESTION missing QUESTIONC .
+
+    CATEGORY        reduce using rule 6 (question -> QUESTION missing QUESTIONC .)
+    QUESTION        reduce using rule 6 (question -> QUESTION missing QUESTIONC .)
+    QUESTIOND       reduce using rule 6 (question -> QUESTION missing QUESTIONC .)
+    $end            reduce using rule 6 (question -> QUESTION missing QUESTIONC .)
+
+
+state 13
+
+    (10) answer -> LBRACKET RBRACKET .
+
+    CATEGORY        reduce using rule 10 (answer -> LBRACKET RBRACKET .)
+    QUESTION        reduce using rule 10 (answer -> LBRACKET RBRACKET .)
+    QUESTIOND       reduce using rule 10 (answer -> LBRACKET RBRACKET .)
+    $end            reduce using rule 10 (answer -> LBRACKET RBRACKET .)
+
+
+state 14
+
+    (11) answer -> LBRACKET options . RBRACKET
+    (8) missing -> LBRACKET options .
+    (15) options -> options . option
+    (27) numerical -> options .
+    (17) option -> . OPTION FEEDBACK
+    (18) option -> . OPTION
+
+  ! shift/reduce conflict for RBRACKET resolved as shift
+  ! reduce/reduce conflict for QUESTIONC resolved using rule 8 (missing -> LBRACKET options .)
+    RBRACKET        shift and go to state 25
+    QUESTIONC       reduce using rule 8 (missing -> LBRACKET options .)
+    OPTION          shift and go to state 22
+
+  ! RBRACKET        [ reduce using rule 27 (numerical -> options .) ]
+  ! QUESTIONC       [ reduce using rule 27 (numerical -> options .) ]
+
+    option                         shift and go to state 26
+
+state 15
+
+    (12) answer -> LBRACKET truefalse . RBRACKET
+
+    RBRACKET        shift and go to state 27
+
+
+state 16
+
+    (13) answer -> LBRACKET numerical . RBRACKET
+    (9) missing -> LBRACKET numerical .
+
+    RBRACKET        shift and go to state 28
+    QUESTIONC       reduce using rule 9 (missing -> LBRACKET numerical .)
+
+
+state 17
+
+    (16) options -> option .
+
+    RBRACKET        reduce using rule 16 (options -> option .)
+    OPTION          reduce using rule 16 (options -> option .)
+    QUESTIONC       reduce using rule 16 (options -> option .)
+
+
+state 18
+
+    (19) truefalse -> TRUE . FEEDBACK
+    (21) truefalse -> TRUE .
+
+    FEEDBACK        shift and go to state 29
+    RBRACKET        reduce using rule 21 (truefalse -> TRUE .)
+
+
+state 19
+
+    (20) truefalse -> FALSE . FEEDBACK
+    (22) truefalse -> FALSE .
+
+    FEEDBACK        shift and go to state 30
+    RBRACKET        reduce using rule 22 (truefalse -> FALSE .)
+
+
+state 20
+
+    (23) numerical -> NUMERICAL . FEEDBACK
+    (25) numerical -> NUMERICAL .
+
+    FEEDBACK        shift and go to state 31
+    RBRACKET        reduce using rule 25 (numerical -> NUMERICAL .)
+    QUESTIONC       reduce using rule 25 (numerical -> NUMERICAL .)
+
+
+state 21
+
+    (24) numerical -> RANGE . FEEDBACK
+    (26) numerical -> RANGE .
+
+    FEEDBACK        shift and go to state 32
+    RBRACKET        reduce using rule 26 (numerical -> RANGE .)
+    QUESTIONC       reduce using rule 26 (numerical -> RANGE .)
+
+
+state 22
+
+    (17) option -> OPTION . FEEDBACK
+    (18) option -> OPTION .
+
+    FEEDBACK        shift and go to state 33
+    RBRACKET        reduce using rule 18 (option -> OPTION .)
+    OPTION          reduce using rule 18 (option -> OPTION .)
+    QUESTIONC       reduce using rule 18 (option -> OPTION .)
+
+
+state 23
+
+    (14) answer -> MNUMERICAL numerical . RBRACKET
+
+    RBRACKET        shift and go to state 34
+
+
+state 24
+
+    (27) numerical -> options .
+    (15) options -> options . option
+    (17) option -> . OPTION FEEDBACK
+    (18) option -> . OPTION
+
+    RBRACKET        reduce using rule 27 (numerical -> options .)
+    OPTION          shift and go to state 22
+
+    option                         shift and go to state 26
+
+state 25
+
+    (11) answer -> LBRACKET options RBRACKET .
+
+    CATEGORY        reduce using rule 11 (answer -> LBRACKET options RBRACKET .)
+    QUESTION        reduce using rule 11 (answer -> LBRACKET options RBRACKET .)
+    QUESTIOND       reduce using rule 11 (answer -> LBRACKET options RBRACKET .)
+    $end            reduce using rule 11 (answer -> LBRACKET options RBRACKET .)
+
+
+state 26
+
+    (15) options -> options option .
+
+    RBRACKET        reduce using rule 15 (options -> options option .)
+    OPTION          reduce using rule 15 (options -> options option .)
+    QUESTIONC       reduce using rule 15 (options -> options option .)
+
+
+state 27
+
+    (12) answer -> LBRACKET truefalse RBRACKET .
+
+    CATEGORY        reduce using rule 12 (answer -> LBRACKET truefalse RBRACKET .)
+    QUESTION        reduce using rule 12 (answer -> LBRACKET truefalse RBRACKET .)
+    QUESTIOND       reduce using rule 12 (answer -> LBRACKET truefalse RBRACKET .)
+    $end            reduce using rule 12 (answer -> LBRACKET truefalse RBRACKET .)
+
+
+state 28
+
+    (13) answer -> LBRACKET numerical RBRACKET .
+
+    CATEGORY        reduce using rule 13 (answer -> LBRACKET numerical RBRACKET .)
+    QUESTION        reduce using rule 13 (answer -> LBRACKET numerical RBRACKET .)
+    QUESTIOND       reduce using rule 13 (answer -> LBRACKET numerical RBRACKET .)
+    $end            reduce using rule 13 (answer -> LBRACKET numerical RBRACKET .)
+
+
+state 29
+
+    (19) truefalse -> TRUE FEEDBACK .
+
+    RBRACKET        reduce using rule 19 (truefalse -> TRUE FEEDBACK .)
+
+
+state 30
+
+    (20) truefalse -> FALSE FEEDBACK .
+
+    RBRACKET        reduce using rule 20 (truefalse -> FALSE FEEDBACK .)
+
+
+state 31
+
+    (23) numerical -> NUMERICAL FEEDBACK .
+
+    RBRACKET        reduce using rule 23 (numerical -> NUMERICAL FEEDBACK .)
+    QUESTIONC       reduce using rule 23 (numerical -> NUMERICAL FEEDBACK .)
+
+
+state 32
+
+    (24) numerical -> RANGE FEEDBACK .
+
+    RBRACKET        reduce using rule 24 (numerical -> RANGE FEEDBACK .)
+    QUESTIONC       reduce using rule 24 (numerical -> RANGE FEEDBACK .)
+
+
+state 33
+
+    (17) option -> OPTION FEEDBACK .
+
+    RBRACKET        reduce using rule 17 (option -> OPTION FEEDBACK .)
+    OPTION          reduce using rule 17 (option -> OPTION FEEDBACK .)
+    QUESTIONC       reduce using rule 17 (option -> OPTION FEEDBACK .)
+
+
+state 34
+
+    (14) answer -> MNUMERICAL numerical RBRACKET .
+
+    CATEGORY        reduce using rule 14 (answer -> MNUMERICAL numerical RBRACKET .)
+    QUESTION        reduce using rule 14 (answer -> MNUMERICAL numerical RBRACKET .)
+    QUESTIOND       reduce using rule 14 (answer -> MNUMERICAL numerical RBRACKET .)
+    $end            reduce using rule 14 (answer -> MNUMERICAL numerical RBRACKET .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for RBRACKET in state 14 resolved as shift
+WARNING: reduce/reduce conflict in state 14 resolved using rule (missing -> LBRACKET options)
+WARNING: rejected rule (numerical -> options) in state 14
