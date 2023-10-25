@@ -57,6 +57,30 @@ def plan2json(path, sheet, skip=None, save=None, pattern=r'[А-Я]+'):
     return out
 
 
+__parse_data = {
+    r'^(B090302_|B090302ВИС_)': 'ВИС',
+    r'^B090302ВИАС_': 'ВИАС',
+    r'^B090303ВЗПИ_': 'ВЗПИ',
+    r'^B090303ВОЗПИ_': 'ВОЗПИ',
+    r'^090402МЗИН_': 'МЗИН',
+    r'^090402МИН_': 'МИН',
+    r'^090403МПИ_': 'МПИ',
+}
+
+
+def parse_name(filename):
+    year = int('20' + filename.split('.')[0][::-1].split('-')[0][::-1])
+    kurs = int(filename.split('_')[-1].split('-')[0])
+
+    name = filename.split('_')[0]
+    for ptr in __parse_data:
+        match = re.search(ptr, filename.strip())
+        if match:
+            name = __parse_data[ptr]
+
+    return name, year, kurs
+
+
 def preps2json(file, sheet, skip=None, save=None):
     if skip is None:
         skip = [0, 0]
@@ -133,10 +157,11 @@ def get_departament_name(departments, code):
     return list(filter(lambda x: x['number'] == code, departments))[0]['name']
 
 
-def plan2excel(plans, preps, departments, kaf, save=None):
+def plan2excel(plans, preps, departments, fos_status, kaf, save=None):
     if save is None:
         save = "plan"
     writer = pd.ExcelWriter(f'{save}.xlsx', engine='xlsxwriter')
+    pm = ['Нет', 'Да']
     for plan_name in plans:
         for year in plans[plan_name]:
             for kurs in plans[plan_name][year]:
@@ -148,15 +173,44 @@ def plan2excel(plans, preps, departments, kaf, save=None):
                 for subj in plan:
                     kaf_name = get_departament_name(departments, plan[subj]['Кафедра'])
                     if kaf == plan[subj]['Кафедра']:
-                        map_subjs.append([i, subj, get_prep(preps, subj, plan_name), kaf_name])
+                        ssubj = plan[subj]['R'] if 'R' in plan[subj] else subj
+                        fs = fos_status[f"{year}-{int(year) + 1}"][
+                            get_departament_name(departments, plan[subj]['Кафедра'])][
+                            ssubj.strip()]
+                        fos = False
+                        skif = False
+                        url = None
+                        for group in fs:
+                            pd_ = parse_name(group)
+                            if pd_[0] == plan_name and str(pd_[1]) == year and str(pd_[2]) == kurs:
+                                if len(fs[group]) == 1:
+                                    fsd = fs[group][list(fs[group].keys())[0]]
+                                    url = fsd['url']
+                                    fos = fsd['new']
+                                    skif = fsd['test'] is not None and len(fsd['test'].strip()) > 0 and 'skif' in fsd['test']
+                                else:
+                                    url = ""
+                                    for fsd_key in fs[group]:
+                                        fsd = fs[group][fsd_key]
+                                        fos = fos or fsd['new']
+                                        skif = skif or fsd['test'] is not None and len(fsd['test'].strip()) > 0 and 'skif' in fsd['test']
+                                        url += fsd['url'] + '\n'
+                                    print(plan_name, year, kurs, "Несколько или 0 рпд", fs[group])
+                        map_subjs.append(
+                            [i, subj, get_prep(preps, ssubj, plan_name), None, pm[fos], None, pm[skif], kaf_name, url])
                     else:
-                        map_subjs.append([i, subj, None, kaf_name])
+                        map_subjs.append([i, subj, None, None, None, None, None, kaf_name, None])
                     i += 1
 
                 df = pd.DataFrame(map_subjs,
                                   columns=['№', 'Наименование дисциплины',
                                            'Ответственный за разработку комплекта ТЗ',
-                                           'Кафедра'])
+                                           'ОМ согласованы (наличие согласовательных подписей, № протоколов, даты)',
+                                           'Размещены в приложениях к РПД',
+                                           'Размещен на сайте СКИФ.ТЕСТ (верифицирован)',
+                                           'Размещены в приложениях к РПД (Тесты)',
+                                           'Кафедра',
+                                           'Ссылки'])
 
                 df.to_excel(writer, sheet_name=f"{plan_name} ({kurs}-{str(year)[2:]})", index=False)
 
@@ -167,34 +221,42 @@ def plan2excel(plans, preps, departments, kaf, save=None):
 # preps = preps2json("./Учет.xlsx", "Учет", [2, 0], './preps.json')
 
 plans = load_json('./plan.json')
-# preps = load_json('./preps.json')
-# departments = load_json('./departments.json')
+preps = load_json('./preps.json')
+departments = load_json('./departments.json')
+fos_status = load_json('./fos_status.json')
+
+plan2excel(
+    plans,
+    preps,
+    departments,
+    fos_status,
+    9,
+    "Карта учета ОМ и тестов2"
+)
 #
-# plan2excel(plans, preps, departments, 9, "Карта учета ОМ и тестов")
-
-history = {}
-for plan_name in plans:
-    if plan_name in history:
-        history[plan_name] = {}
-    for year in plans[plan_name]:
-        if year in history[plan_name]:
-            history[plan_name][year] = {}
-        kurses = sorted(plans[plan_name][year].keys())[::-1]
-        first = True
-        subjects = {}
-        for i in range(len(kurses) - 1):
-
-            kurs = kurses[i]
-
-            if kurs in history[plan_name][year]:
-                history[plan_name][year][kurs] = {'+': {}, '-': {}}
-
-            if kurs == kurses[-1]:
-                print(kurs)
-
-            plan = plans[plan_name][year][kurs]
-            plan = plan[list(plan.keys())[0]]
-
-            print(plan)
-            if first:
-                first = False
+# history = {}
+# for plan_name in plans:
+#     if plan_name in history:
+#         history[plan_name] = {}
+#     for year in plans[plan_name]:
+#         if year in history[plan_name]:
+#             history[plan_name][year] = {}
+#         kurses = sorted(plans[plan_name][year].keys())[::-1]
+#         first = True
+#         subjects = {}
+#         for i in range(len(kurses) - 1):
+#
+#             kurs = kurses[i]
+#
+#             if kurs in history[plan_name][year]:
+#                 history[plan_name][year][kurs] = {'+': {}, '-': {}}
+#
+#             if kurs == kurses[-1]:
+#                 print(kurs)
+#
+#             plan = plans[plan_name][year][kurs]
+#             plan = plan[list(plan.keys())[0]]
+#
+#             print(plan)
+#             if first:
+#                 first = False

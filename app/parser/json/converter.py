@@ -1,4 +1,5 @@
 import json
+import os.path
 
 
 def parse_json(content):
@@ -10,13 +11,15 @@ def open_json(filepath):
         return json.loads(f.read())
 
 
-def save_json(data, save):
+def save_json(data, save: str):
+    dest = os.path.split(save)[0]
+    if not os.path.exists(dest):
+        os.makedirs(dest)
     with open(save, "w", encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False)
 
 
 def json2gift(data):
-
     lines = []
     last_category = None
     answer_type = "~", "="
