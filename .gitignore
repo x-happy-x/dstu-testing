@@ -1,4 +1,7 @@
 .idea
+.cache
+.session
+со
 tmp
 dest
 source
