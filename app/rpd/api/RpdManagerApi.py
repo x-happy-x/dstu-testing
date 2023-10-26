@@ -1,6 +1,6 @@
 from .tools import get_now_year
 from .RupResultManagerApi import RupResultManagerApi
-from .BaseApi import BaseApi, BaseParams as Params, Method
+from .BaseApi import BaseApi, Params, Method
 from .RpdApi import RpdApi
 
 

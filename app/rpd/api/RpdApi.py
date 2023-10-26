@@ -1,20 +1,20 @@
-from .BaseApi import BaseApi, BaseParams, Method
+from .BaseApi import BaseApi, Params, Method
 
 
 class RpdApi(BaseApi):
     data = {
-        BaseParams.rup_row_id: 0,
-        BaseParams.rp_id: 0,
-        BaseParams.hash: '',
+        Params.rup_row_id: 0,
+        Params.rp_id: 0,
+        Params.hash: '',
     }
 
     def default_query(self, url, *names, **kwargs):
         return self.query(
             f"https://rpd.donstu.ru/{url}",
             kwargs,
-            Method.GET,
-            BaseParams.rup_row_id,
-            BaseParams.rp_id, *names
+            kwargs.get('method', Method.GET),
+            Params.rup_row_id,
+            Params.rp_id, *names
         )
 
     def get(self, **kwargs):
@@ -50,7 +50,7 @@ class RpdApi(BaseApi):
         :param kwargs: rup_row_id и rp_id - обязательные аргументы (hash возможно тоже)
         :return: Response
         """
-        return self.default_query('Title/GetTitle', BaseParams.hash, **kwargs)
+        return self.default_query('Title/GetTitle', Params.hash, **kwargs)
 
     def get_objectives_discipline(self, **kwargs):
         """
@@ -116,6 +116,51 @@ class RpdApi(BaseApi):
         """
         return self.default_query('AppxIndex/Load', **kwargs)
 
+    def get_summary(self, data=None):
+        """
+        Панель часов
+        :param data: rup_row_id и rp_id - обязательные аргументы
+        :return: Response
+        """
+        if data is None:
+            data = {}
+        return self.query(
+            'https://rpd.donstu.ru/Content/GetSummary',
+            data,
+            Method.POST,
+            Params.rup_row_id,
+            Params.rp_id
+        )
+
+    def get_literature(self, data=None):
+        if data is None:
+            data = {}
+        return self.default_query('LitIndex/GetCards', **data)
+
+    def get_content(self, data=None):
+        if data is None:
+            data = {}
+        return self.default_query('Content/Load', **data)
+
+    def get_comps(self, data=None):
+        if data is None:
+            data = {}
+        return self.default_query('/UpResultsIndex/GetCards', **data)
+
+    def get_internet_literatures(self, data=None):
+        if data is None:
+            data = {}
+        return self.default_query('ResIndex/GetCards', **data)
+
+    def init_litmanager(self, data=None):
+        if data is None:
+            data = {}
+        return self.default_query('LitManager/Initialize', **data)
+
+    def init_content(self, data=None):
+        if data is None:
+            data = {}
+        return self.default_query('Content/Initialize', **data)
 
     # Заголовки (НИКОГДА НЕ ПРИГОДИТСЯ, ХЗ ЗАЧЕМ ПИСАЛ =) )
 

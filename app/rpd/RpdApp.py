@@ -8,6 +8,8 @@ from typing import List, Any
 from datetime import datetime
 import docx
 
+MAX_LENGTH = 200
+MAX_WORDS = 10
 
 class Result:
     success: bool
@@ -83,11 +85,11 @@ class RpdApp:
             try:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
+                    save_json(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']['department']['items']
                         for item in items:
                             ds.append(Department(self, current_dir, **item, year=year))
-                    save_json(response_data, filepath)
                 else:
                     return Result(ds, False, response.text)
             except Exception as e:
@@ -123,9 +125,9 @@ class Department:
 
         sn = self.name.strip(' \r\n\t').replace("\"", "'")
         s1 = None
-        if len(sn) > 200:
+        if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", 10)[:9])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
         current_dir = os.path.join(self.path, sn)
         filename = f"disciplines_{show_only_with_rp}_{hide_without_students}.json"
         filepath = os.path.join(current_dir, filename)
@@ -151,14 +153,14 @@ class Department:
             try:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
-                    if response_data['result']:
-                        items = response_data['data']['planItems']['items']
-                        for item in items:
-                            ds.append(Discipline(self.app, self, current_dir, **item))
                     save_json(response_data, filepath)
                     if s1 is not None:
                         with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
                             f.write(s1)
+                    if response_data['result']:
+                        items = response_data['data']['planItems']['items']
+                        for item in items:
+                            ds.append(Discipline(self.app, self, current_dir, **item))
                 else:
                     return Result(ds, False, response.text)
             except Exception as e:
@@ -205,9 +207,9 @@ class Discipline:
 
         sn = self.name.strip(' \r\n\t').replace("\"", "'")
         s1 = None
-        if len(sn) > 200:
+        if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", 10)[:9])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
         current_dir = os.path.join(self.path, sn)
         filename = f"plans_{show_only_with_rp}_{hide_without_students}.json"
         filepath = os.path.join(current_dir, filename)
@@ -236,14 +238,14 @@ class Discipline:
             try:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
-                    if response_data['result']:
-                        items = response_data['data']['rup']['items']
-                        for item in items:
-                            ds.append(Plan(self.app, self, current_dir, **item))
                     save_json(response_data, filepath)
                     if s1 is not None:
                         with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
                             f.write(s1)
+                    if response_data['result']:
+                        items = response_data['data']['rup']['items']
+                        for item in items:
+                            ds.append(Plan(self.app, self, current_dir, **item))
                 else:
                     return Result(ds, False, response.text)
             except Exception as e:
@@ -341,11 +343,11 @@ class Plan:
             try:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
+                    save_json(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']['rps']['items']
                         for item in items:
                             ds.append(RP(self.app, self, current_dir, **item))
-                    save_json(response_data, filepath)
                 else:
                     return Result(ds, False, response.text)
             except Exception as e:
@@ -416,12 +418,62 @@ class RP:
         self.direction_oop_name = direction_oop_name
         self.status = status
 
+    def summary(self):
+
+        self.api.set_dict({
+            Params.rup_row_id: self.rup_row_id,
+            Params.rp_id: self.id,
+        })
+
+        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
+        filename = f"summary.json"
+        filepath = os.path.join(current_dir, filename)
+
+        message = None
+        ds = {}
+
+        if self.app.load_cache and os.path.exists(filepath):
+            message = 'from cache'
+            response_data = open_json(filepath)
+            if response_data['result']:
+                items = response_data
+                ds = items
+        else:
+            response = self.api.get_summary()
+            try:
+                if response.status_code == 200:
+                    response_data = json.loads(response.text)
+                    save_json(response_data, filepath)
+                    if s1 is not None:
+                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                            f.write(s1)
+                    if response_data['result']:
+                        items = response_data
+                        ds = items
+                else:
+                    print(response.status_code, response.text)
+                    return Result(ds, False, response.text)
+            except Exception as e:
+                print(e)
+                return Result(ds, False, str(e))
+        return Result(ds, message=message)
+
     def FOS(self):
         self.api.set_dict({
             Params.rup_row_id: self.rup_row_id,
             Params.rp_id: self.id,
         })
+
         sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
         current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"fos.json"
         filepath = os.path.join(current_dir, filename)
@@ -444,6 +496,10 @@ class RP:
             try:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
+                    save_json(response_data, filepath)
+                    if s1 is not None:
+                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                            f.write(s1)
                     if response_data['result']:
                         items = response_data['data']
                         ds['Контрольные вопросы и задания'] = items['field1']
@@ -451,7 +507,96 @@ class RP:
                         ds['Оценочные материалы'] = items['field3']
                         ds['Перечень видов оценочных средств'] = items['field4']
                         ds['Ссылка на СКИФ.Тест'] = items['field5']
+                else:
+                    return Result(ds, False, response.text)
+            except Exception as e:
+                return Result(ds, False, str(e))
+        return Result(ds, message=message)
+
+    def competencies_board(self):
+        self.api.set_dict({
+            Params.rup_row_id: self.rup_row_id,
+            Params.rp_id: self.id,
+        })
+
+        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
+        filename = f"competencies.json"
+        filepath = os.path.join(current_dir, filename)
+
+        message = None
+        ds = CompetenceBoard(self)
+
+        if self.app.load_cache and os.path.exists(filepath):
+            message = 'from cache'
+            response_data = open_json(filepath)
+            if response_data['result'] and not response_data['data']['isEmpty']:
+                items = response_data['data']['items']
+                for item in items:
+                    ds.add_item(item)
+        else:
+            response = self.api.get_competencies_of_disciplines()
+            try:
+                if response.status_code == 200:
+                    response_data = json.loads(response.text)
                     save_json(response_data, filepath)
+                    if s1 is not None:
+                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                            f.write(s1)
+                    if response_data['result'] and not response_data['data']['isEmpty']:
+                        items = response_data['data']['items']
+                        for item in items:
+                            ds.add_item(item)
+                else:
+                    print(response.status_code, response.text)
+                    return Result(ds, False, response.text)
+            except Exception as e:
+                print(e)
+                return Result(ds, False, str(e))
+        return Result(ds, message=message)
+
+    def literatures(self):
+        self.api.set_dict({
+            Params.rup_row_id: self.rup_row_id,
+            Params.rp_id: self.id,
+        })
+
+        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
+        filename = f"books.json"
+        filepath = os.path.join(current_dir, filename)
+
+        message = None
+        ds = []
+
+        if self.app.load_cache and os.path.exists(filepath):
+            message = 'from cache'
+            response_data = open_json(filepath)
+            if response_data['result']:
+                items = response_data['data']['cards']
+                for item in items:
+                    ds.append(Book(self, current_dir, **item))
+        else:
+            response = self.api.get_appx()
+            try:
+                if response.status_code == 200:
+                    response_data = json.loads(response.text)
+                    save_json(response_data, filepath)
+                    if s1 is not None:
+                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                            f.write(s1)
+                    if response_data['result']:
+                        items = response_data['data']['cards']
+                        for item in items:
+                            ds.append(Book(self, current_dir, **item))
                 else:
                     return Result(ds, False, response.text)
             except Exception as e:
@@ -465,6 +610,10 @@ class RP:
         })
 
         sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
         current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"appx.json"
         filepath = os.path.join(current_dir, filename)
@@ -484,11 +633,14 @@ class RP:
             try:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
+                    save_json(response_data, filepath)
+                    if s1 is not None:
+                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                            f.write(s1)
                     if response_data['result']:
                         items = response_data['data']['cards']
                         for item in items:
                             ds.append(Appx(self.app, self, current_dir, **item))
-                    save_json(response_data, filepath)
                 else:
                     return Result(ds, False, response.text)
             except Exception as e:
@@ -586,3 +738,260 @@ class Appx:
         return (f"Приложение (id:{self.id}, name:{self.name}, created:{self.created}, "
                 f"modified:{self.modified}, download_link:{self.download_link}, "
                 f"length:{self.length}, type:{self.type})")
+
+
+class Competence:
+    card_id: int
+    comp_id: int
+    comp_code: str
+    comp_description: str
+    indicator_list: List
+
+    def __init__(self, **kwargs):
+        self.comp_id = kwargs.get('compId')
+        self.card_id = kwargs.get('cardId')
+        self.comp_code = kwargs.get('compCode')
+        self.comp_description = kwargs.get('compDescription')
+
+        self.indicator_list = []
+
+    def set(self, comp_id: int, card_id: int, comp_code: str, comp_description: str) -> None:
+        self.comp_id = comp_id
+        self.card_id = card_id
+        self.comp_code = comp_code
+        self.comp_description = comp_description
+
+    def add_indicator(self, indicator=None, **kwargs):
+        if indicator is not None:
+            self.indicator_list.append(indicator)
+        else:
+            self.indicator_list.append(Indicator(self, **kwargs))
+
+    def indicators(self):
+        return self.indicator_list
+
+
+class Indicator:
+    competence: Competence
+    indicator_id: int
+    indi_code: str
+    indi_description: str
+    level_list: List
+
+    def __init__(self, competence: Competence, **kwargs):
+        self.competence = competence
+        self.indicator_id = kwargs.get('indicatorId')
+        self.indi_code = kwargs.get('indiCode')
+        self.indi_description = kwargs.get('indiDescription')
+        self.level_list = []
+
+    def set(self, indicator_id: int, indi_code: str, indi_description: str):
+        self.indicator_id = indicator_id
+        self.indi_code = indi_code
+        self.indi_description = indi_description
+
+    def add_level(self, level=None, **kwargs):
+        if level is not None:
+            self.level_list.append(level)
+        else:
+            self.level_list.append(Level(self, **kwargs))
+
+    def levels(self):
+        return self.level_list
+
+
+class Level:
+    indicator: Indicator
+    category_id: int
+    category_name: str
+    level_id: int
+    is_mock: bool
+    contents: str
+    rating_scale: str
+    mark_scale: str
+    code: str
+    mark5: None
+    mark4: None
+    mark3: None
+    mark2: None
+    task1: None
+    task2: None
+    fos_inter_control_task1: None
+    fos_inter_control_task2: None
+    fos_current_control_task1: None
+    fos_current_control_task2: None
+    download_fos_url: str
+    upload_fos_url: str
+    delete_fos_url: str
+    has_current_fos: None
+    has_intermediate_fos: None
+
+    def __init__(self, indicator: Indicator, **kwargs):
+        self.indicator = indicator
+        self.category_id = kwargs.get('category_id')
+        self.category_name = kwargs.get('categoryName')
+        self.level_id = kwargs.get('levelId')
+        self.is_mock = kwargs.get('isMock')
+        self.contents = kwargs.get('contents')
+        self.rating_scale = kwargs.get('ratingScale')
+        self.mark_scale = kwargs.get('markScale')
+        self.code = kwargs.get('code')
+        self.mark5 = kwargs.get('mark5')
+        self.mark4 = kwargs.get('mark4')
+        self.mark3 = kwargs.get('mark3')
+        self.mark2 = kwargs.get('mark2')
+        self.task1 = kwargs.get('task1')
+        self.task2 = kwargs.get('task2')
+        self.fos_inter_control_task1 = kwargs.get('fos_interControl_task1')
+        self.fos_inter_control_task2 = kwargs.get('fos_interControl_task2')
+        self.fos_current_control_task1 = kwargs.get('fos_currentControl_task1')
+        self.fos_current_control_task2 = kwargs.get('fos_currentControl_task2')
+        self.download_fos_url = kwargs.get('downloadFosUrl')
+        self.upload_fos_url = kwargs.get('uploadFosUrl')
+        self.delete_fos_url = kwargs.get('deleteFosUrl')
+        self.has_current_fos = kwargs.get('hasCurrentFos')
+        self.has_intermediate_fos = kwargs.get('hasIntermediateFos')
+
+    def set(self, category_id: int, category_name: str, level_id: int, is_mock: bool, contents: str, rating_scale: str,
+            mark_scale: str, code: str, mark5: None, mark4: None, mark3: None, mark2: None, task1: None, task2: None,
+            fos_inter_control_task1: None, fos_inter_control_task2: None, fos_current_control_task1: None,
+            fos_current_control_task2: None, download_fos_url: str, upload_fos_url: str, delete_fos_url: str,
+            has_current_fos: None, has_intermediate_fos: None) -> None:
+        self.category_id = category_id
+        self.category_name = category_name
+        self.level_id = level_id
+        self.is_mock = is_mock
+        self.contents = contents
+        self.rating_scale = rating_scale
+        self.mark_scale = mark_scale
+        self.code = code
+        self.mark5 = mark5
+        self.mark4 = mark4
+        self.mark3 = mark3
+        self.mark2 = mark2
+        self.task1 = task1
+        self.task2 = task2
+        self.fos_inter_control_task1 = fos_inter_control_task1
+        self.fos_inter_control_task2 = fos_inter_control_task2
+        self.fos_current_control_task1 = fos_current_control_task1
+        self.fos_current_control_task2 = fos_current_control_task2
+        self.download_fos_url = download_fos_url
+        self.upload_fos_url = upload_fos_url
+        self.delete_fos_url = delete_fos_url
+        self.has_current_fos = has_current_fos
+        self.has_intermediate_fos = has_intermediate_fos
+
+
+class CompetenceBoard:
+    rp: RP
+    competence_list: List[Competence]
+
+    def __init__(self, rp: RP):
+        self.rp = rp
+        self.competence_list = []
+
+    def add_item(self, item):
+        comp: Competence
+        indicator: Indicator
+        cmp: Competence | None = None
+
+        # Поиск компетенции в имеющихся
+        for comp in self.competence_list:
+            if comp.comp_id == item['compId']:
+                cmp = comp
+                break
+
+        # Если нет добавление нового
+        if cmp is None:
+            cmp = Competence(**item)
+            self.competence_list.append(cmp)
+
+        ind: Indicator | None = None
+        # Поиск компетенции в имеющихся
+        for indicator in cmp.indicators():
+            if indicator.indicator_id == item['indicatorId']:
+                ind = indicator
+                break
+
+        # Если нет добавление нового
+        if ind is None:
+            cmp.add_indicator(**item)
+            ind = cmp.indicators()[-1]
+
+        # Если уровень пустой не добавляем ничего
+        if item['contents'] is None or len(item['contents'].strip()) < 3:
+            return
+
+        # Иначе добавляем новый уровень
+        ind.add_level(**item)
+
+    def competencies(self):
+        return self.competence_list
+
+
+class Book:
+    rp: RP
+    path: str
+    selected: bool
+    code: str
+    lit_type: int
+    lit_id: int
+    adress: str
+    count: int
+    name: str
+    isbn: None
+    lib_number: str
+    edition: None
+    copies_in_lib: int
+    library: str
+    is_periodic: bool
+    editors: str
+    keywords: str
+    rubric: str
+    is_electron: bool
+    name_prolong: str
+    authors: str
+    year: int
+    volume: str
+    publishing: str
+    modefied_on: datetime
+    validity: None
+    details: None
+    file_id: None
+    deleted: bool
+
+    def __init__(self, rp: RP, path: str, **kwarg):
+        self.rp = rp
+        self.path = path
+        self.selected = kwarg.get('selected')
+        self.code = kwarg.get('code')
+        self.lit_type = kwarg.get('litType')
+        self.lit_id = kwarg.get('litId')
+        self.adress = kwarg.get('adress')
+        self.count = kwarg.get('count')
+        self.name = kwarg.get('name')
+        self.isbn = kwarg.get('isbn')
+        self.lib_number = kwarg.get('libNumber')
+        self.edition = kwarg.get('edition')
+        self.copies_in_lib = kwarg.get('copiesInLib')
+        self.library = kwarg.get('library')
+        self.is_periodic = kwarg.get('isPeriodic')
+        self.editors = kwarg.get('editors')
+        self.keywords = kwarg.get('keywords')
+        self.rubric = kwarg.get('rubric')
+        self.is_electron = kwarg.get('isElectron')
+        self.nameProlong = kwarg.get('nameProlong')
+        self.authors = kwarg.get('authors')
+        self.year = kwarg.get('year')
+        self.volume = kwarg.get('volume')
+        self.publishing = kwarg.get('publishing')
+        self.modefied_on = kwarg.get('modefiedOn')
+        self.validity = kwarg.get('validity')
+        self.details = kwarg.get('details')
+        self.file_id = kwarg.get('fileId')
+        self.deleted = kwarg.get('deleted')
+
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)

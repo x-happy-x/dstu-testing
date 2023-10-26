@@ -13,7 +13,7 @@ class Method:
     HEAD = 'HEAD'
 
 
-class BaseParams:
+class Params:
     # RPD Manager
     year = 'accYear'
     dep_id = 'depId'
@@ -37,7 +37,7 @@ class BaseParams:
 
 class BaseApi:
     data = {
-        BaseParams.year: get_now_year(),
+        Params.year: get_now_year(),
     }
 
     def __init__(self, session: requests.Session = None, data: dict = None):

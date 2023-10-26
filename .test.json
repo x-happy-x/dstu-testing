@@ -1,294 +1,137 @@
 {
-  'result': True,
-  'message': None,
-  'sysData': None,
-  'data': {
-    'commonState': {
-      'app': {
-        'version': '0.4.3.6'
+  "result": true,
+  "message": null,
+  "sysData": null,
+  "data": {
+    "commonState": {
+      "hash": "Mn/BTjbfXHiRT4gcKUb96A==",
+      "hasChanges": false,
+      "isEmpty": false,
+      "app": {
+        "version": "0.4.3.10"
       }
     },
-    'rup': {
-      'items': [
+    "header": {
+      "isPlaningBySem": true,
+      "isSpreadingByTerms": true,
+      "columns": [
         {
-          'rupRowId': 3019716,
-          'rupId': 45908,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.22',
-          'rupName': 'B090302_1-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.02 Информационные системы и технологии\r\n',
-          'subSpecName': 'Информационные системы и технологии',
-          'nagrRows': [],
-          'rpCount': 2,
-          'url': 'https://mmis.ru/programs/webplany'
+          "fieldName": "workType",
+          "name": "Виды работ"
         },
         {
-          'rupRowId': 3019336,
-          'rupId': 45905,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.30',
-          'rupName': 'B090302_2-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.02 Информационные системы и технологии\r\n',
-          'subSpecName': 'Web-ориентированные информационно-аналитические системы',
-          'nagrRows': [
-            'Калайда А.В.(Лек)',
-            'Блиновская Т.М.(Лаб)',
-            'Пожарская Е.Д.(Лаб)'
-          ],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
+          "name": "Семестр ([Курс].[Номер семестра на курсе]), число учебных недель в семестрах",
+          "fieldName": "mainBand",
+          "columns": [
+            {
+              "name": "8(4.2)",
+              "fieldName": "term8",
+              "columns": [
+                {
+                  "fieldName": "УП_8",
+                  "name": "УП"
+                }
+              ]
+            },
+            {
+              "name": "9",
+              "fieldName": "term8",
+              "columns": [
+                {
+                  "fieldName": "РПД_8",
+                  "name": "РПД"
+                }
+              ]
+            },
+            {
+              "name": "Итого",
+              "fieldName": "total",
+              "columns": [
+                {
+                  "fieldName": "УП_9",
+                  "name": "УП"
+                },
+                {
+                  "fieldName": "РПД_9",
+                  "name": "РПД"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "items": [
+      {
+        "ВидЗанятий": "Лекции",
+        "УП_8": 32.0,
+        "РПД_8": 32.0,
+        "УП_9": 32.0,
+        "РПД_9": 32.0
+      },
+      {
+        "ВидЗанятий": "Лабораторные",
+        "УП_8": 32.0,
+        "РПД_8": 32.0,
+        "УП_9": 32.0,
+        "РПД_9": 32.0
+      },
+      {
+        "ВидЗанятий": "Контроль самостоятельной работы",
+        "УП_8": 6.0,
+        "РПД_8": 6.0,
+        "УП_9": 6.0,
+        "РПД_9": 6.0
+      },
+      {
+        "ВидЗанятий": "Иная контактная работа",
+        "УП_8": 0.3,
+        "РПД_8": 0.3,
+        "УП_9": 0.3,
+        "РПД_9": 0.3
+      },
+      {
+        "ВидЗанятий": "Итого ауд.",
+        "УП_8": 64.0,
+        "РПД_8": 64.0,
+        "УП_9": 64.0,
+        "РПД_9": 64.0
+      },
+      {
+        "ВидЗанятий": "Сам. работа",
+        "УП_8": 110.0,
+        "РПД_8": 110.0,
+        "УП_9": 110.0,
+        "РПД_9": 110.0
+      },
+      {
+        "ВидЗанятий": "Часы на контроль",
+        "УП_8": 35.7,
+        "РПД_8": 35.7,
+        "УП_9": 35.7,
+        "РПД_9": 35.7
+      },
+      {
+        "ВидЗанятий": "Итого",
+        "УП_8": 216.0,
+        "РПД_8": 216.0,
+        "УП_9": 216.0,
+        "РПД_9": 216.0
+      }
+    ],
+    "terms": [
+      {
+        "seqNum": 8
+      }
+    ],
+    "controls": {
+      "rows": [
         {
-          'rupRowId': 3266061,
-          'rupId': 45905,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.29',
-          'rupName': 'B090302_2-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.02 Информационные системы и технологии\r\n',
-          'subSpecName': 'Информационные системы и технологии',
-          'nagrRows': [
-            'Калайда А.В.(Лек)',
-            'Блиновская Т.М.(Лаб)',
-            'Паниотова В.Ю.(Лаб)'
-          ],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3020396,
-          'rupId': 45915,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.В.06',
-          'rupName': 'B090302ВИАС_09_3-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.02 Информационные системы и технологии\r\n',
-          'subSpecName': 'Информационные системы и технологии',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3020580,
-          'rupId': 45917,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.В.06',
-          'rupName': 'B090302ВИАС_09_4-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.02 Информационные системы и технологии\r\n',
-          'subSpecName': 'Web-ориентированные информационно-аналитические системы',
-          'nagrRows': [],
-          'rpCount': 2,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3021872,
-          'rupId': 45925,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.В.06',
-          'rupName': 'B090302ВИС_09_3-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.02 Информационные системы и технологии\r\n',
-          'subSpecName': 'Информационные системы и технологии',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3021968,
-          'rupId': 45926,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.В.06',
-          'rupName': 'B090302ВИС_09_4-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.02 Информационные системы и технологии\r\n',
-          'subSpecName': 'Информационные системы и технологии',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3030439,
-          'rupId': 46010,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.18',
-          'rupName': 'B090303ВЗПИ_09_1-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'заочная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.03 Прикладная информатика\r\n',
-          'subSpecName': 'Прикладная информатика',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3030366,
-          'rupId': 46009,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.18',
-          'rupName': 'B090303ВЗПИ_09_2-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'заочная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.03 Прикладная информатика\r\n',
-          'subSpecName': 'Прикладная информатика',
-          'nagrRows': [
-            'Блиновская Т.М.(Лек)',
-            'Колесникова О.В.(Лаб)',
-            'Рашидова Е.В.(Лаб)'
-          ],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3030510,
-          'rupId': 46011,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.18',
-          'rupName': 'B090303ВЗПИ_09_3-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'заочная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.03 Прикладная информатика\r\n',
-          'subSpecName': 'Прикладная информатика',
-          'nagrRows': [
-            'Блиновская Т.М.(Лек,КР)',
-            'Колесникова О.В.(Лаб)',
-            'Садовая И.В.(Лаб)'
-          ],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3030740,
-          'rupId': 46013,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.23',
-          'rupName': 'B090303ВЗПИ_09_4-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'заочная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.03 Прикладная информатика',
-          'subSpecName': 'Прикладная информатика',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3032530,
-          'rupId': 46027,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.24',
-          'rupName': 'B090303ВЗПИ_09_5-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'заочная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.03 Прикладная информатика',
-          'subSpecName': 'Прикладная информатика',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3037354,
-          'rupId': 46072,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.18',
-          'rupName': 'B090303ВОЗПИ_09_1-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очно-заочная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.03 Прикладная информатика\r\n',
-          'subSpecName': 'Прикладная информатика',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3034579,
-          'rupId': 46048,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.О.18',
-          'rupName': 'B090303ВОЗПИ_09_2-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очно-заочная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '09.03.03 Прикладная информатика\r\n',
-          'subSpecName': 'Прикладная информатика',
-          'nagrRows': [
-            'Калайда А.В.(Лек,Лаб)'
-          ],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3101956,
-          'rupId': 46711,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.В.16.02',
-          'rupName': 'b220302ОНМ_29_2-23.plx',
-          'fgosTypeName': 'ФГОС 3++',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '22.03.02 Металлургия',
-          'subSpecName': 'Металлургия черных металлов',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
-        },
-        {
-          'rupRowId': 3103333,
-          'rupId': 46717,
-          'hasDraft': False,
-          'isDraftCurrupted': False,
-          'index': 'Б1.В.20.02',
-          'rupName': 'b220302ОНМ_29_4-23.plx',
-          'fgosTypeName': 'ФГОС 3+',
-          'studyForm': 'очная',
-          'studyLevel': 'Бакалавриат',
-          'specName': '22.03.02 Металлургия ',
-          'subSpecName': 'Металлургия черных металлов',
-          'nagrRows': [],
-          'rpCount': 1,
-          'url': 'https://mmis.ru/programs/webplany'
+          "вид": "Экзамен",
+          "terms": "8"
         }
       ],
-      'current': 3019716
-    },
-    'settings': {
-      'allowCreate': True
+      "columnCaption": "Семестр"
     }
   }
 }
