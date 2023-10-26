@@ -74,7 +74,7 @@ discipline: Discipline
 plan: Plan
 rpd: RP
 file: Appx
-cb: CompetenceBoard
+cb: CompetenceBoard | None = None
 
 app = RpdApp()
 
@@ -101,6 +101,9 @@ competence_settings = {
     'Сохранить': 'comps2.xlsx',
     'Строка': 1,
 }
+
+# Создание таблиц по практикам
+check_practice_tables = True
 
 if competence_settings['Исходный файл'] is None:
     competence_settings['Файл'] = Workbook()
@@ -177,19 +180,32 @@ for year in [get_now_year()]:
                         cbr = rpd.competencies_board()
                         cb = cbr.data
                         for comp in cb.competencies():
-                            competence_settings['Рабочий лист'][f"A{competence_settings['Строка']}"].value = comp.comp_code
-                            competence_settings['Рабочий лист'][f"B{competence_settings['Строка']}"].value = comp.comp_description
+                            competence_settings['Рабочий лист'][
+                                f"A{competence_settings['Строка']}"].value = comp.comp_code
+                            competence_settings['Рабочий лист'][
+                                f"B{competence_settings['Строка']}"].value = comp.comp_description
                             competence_settings['Строка'] += 1
                             for indicator in comp.indicators():
-                                competence_settings['Рабочий лист'][f"A{competence_settings['Строка']}"].value = indicator.indi_code
-                                competence_settings['Рабочий лист'][f"B{competence_settings['Строка']}"].value = indicator.indi_description
+                                competence_settings['Рабочий лист'][
+                                    f"A{competence_settings['Строка']}"].value = indicator.indi_code
+                                competence_settings['Рабочий лист'][
+                                    f"B{competence_settings['Строка']}"].value = indicator.indi_description
                                 competence_settings['Строка'] += 1
                                 for level in indicator.levels():
-                                    competence_settings['Рабочий лист'][f"A{competence_settings['Строка']}"].value = level.level_id
-                                    competence_settings['Рабочий лист'][f"B{competence_settings['Строка']}"].value = level.contents
+                                    competence_settings['Рабочий лист'][
+                                        f"A{competence_settings['Строка']}"].value = level.level_id
+                                    competence_settings['Рабочий лист'][
+                                        f"B{competence_settings['Строка']}"].value = level.contents
                                     competence_settings['Строка'] += 1
 
                         competence_settings['Строка'] += 2
+
+                    if check_practice_tables and "практика" in discipline.name.lower():
+                        if cb is None:
+                            cbr = rpd.competencies_board()
+                            cb = cbr.data
+                        cb.generate_table1(rpd.get_file_path('table1.docx')[1])
+                        cb.generate_table2(rpd.get_file_path('table2.docx')[1])
 
                     if check_fos:
                         # Приложение

@@ -112,11 +112,81 @@ def cell_header(doc, cell):
         p.paragraph_format.space_after = Pt(0)
 
 
+def cell_body_level(doc, cell):
+    for p in cell.paragraphs:
+        p.style = doc.styles['TableBodyLevelsStyle']
+        p.paragraph_format.space_after = Pt(0)
+
+
 def add_table_header_text(doc, text, font_size=14, alignment=WD_TABLE_ALIGNMENT.CENTER, style="Normal"):
     p_header = doc.add_paragraph(text, style=style)
     p_header.alignment = alignment
     p_header.paragraph_format.space_after = Pt(0)
     p_header.runs[0].font.size = Pt(font_size)
+
+
+def add_table_comps2(doc, cb, headers, cells_text, cols_width, styles, table=None):
+    if table is None:
+        table = doc.add_table(rows=0, cols=10)
+
+    for header in headers:
+        row = table.add_row()
+        for i in header:
+            row.cells[i].text = header[i]
+
+    for row in table.rows:
+        for style in styles:
+            if 'header' not in style['type']:
+                continue
+            for ind in style['indexes']:
+                style['func'](row.cells[ind])
+
+    cols_count = len(table.rows[0].cells)
+    i = 0
+    while i < cols_count:
+        ii = 1
+        if i < cols_count - 1 and len(table.rows[0].cells[i + 1].text.strip()) == 0:
+            table.rows[0].cells[i].merge(table.rows[0].cells[i + 1])
+            ii += 1
+        if len(table.rows[1].cells[i].text.strip()) == 0:
+            table.rows[0].cells[i].merge(table.rows[1].cells[i])
+        i += ii
+
+    for row in table.rows:
+        for style in styles:
+            if 'header' not in style['type']:
+                continue
+            for ind in style['indexes']:
+                style['func'](row.cells[ind])
+
+    row = table.add_row()
+
+    for competence in cb.competencies():
+        for indicator in competence.indicators():
+
+            row.cells[0].text = indicator.indi_code
+
+            for i, v in cells_text.items():
+                row.cells[i].text = v
+
+            for level in indicator.levels():
+                if level.contents is None or len(level.contents) < 4:
+                    continue
+                row.cells[(level.level_id * 3 - 2)].text = level.contents
+
+            for style in styles:
+                if 'body' not in style['type']:
+                    continue
+                for ind in style['indexes']:
+                    style['func'](row.cells[ind])
+
+            row = table.add_row()
+
+    row._element.getparent().remove(row._element)
+
+    for i in range(len(table.columns)):
+        for cell in table.columns[i].cells:
+            cell.width = Cm(cols_width[i])
 
 
 def add_table_comps(doc, cb, headers, level_names, cells_text, merge_cols, cols_width, styles, table=None):
@@ -200,11 +270,10 @@ class Competence:
 
         self.indicator_list = []
 
-    def set(self, comp_id: int, card_id: int, comp_code: str, comp_description: str) -> None:
-        self.comp_id = comp_id
-        self.card_id = card_id
-        self.comp_code = comp_code
-        self.comp_description = comp_description
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def add_indicator(self, indicator=None, **kwargs):
         if indicator is not None:
@@ -230,10 +299,10 @@ class Indicator:
         self.indi_description = kwargs.get('indiDescription')
         self.level_list = []
 
-    def set(self, indicator_id: int, indi_code: str, indi_description: str):
-        self.indicator_id = indicator_id
-        self.indi_code = indi_code
-        self.indi_description = indi_description
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def add_level(self, level=None, **kwargs):
         if level is not None:
@@ -297,34 +366,10 @@ class Level:
         self.has_current_fos = kwargs.get('hasCurrentFos')
         self.has_intermediate_fos = kwargs.get('hasIntermediateFos')
 
-    def set(self, category_id: int, category_name: str, level_id: int, is_mock: bool, contents: str, rating_scale: str,
-            mark_scale: str, code: str, mark5: None, mark4: None, mark3: None, mark2: None, task1: None, task2: None,
-            fos_inter_control_task1: None, fos_inter_control_task2: None, fos_current_control_task1: None,
-            fos_current_control_task2: None, download_fos_url: str, upload_fos_url: str, delete_fos_url: str,
-            has_current_fos: None, has_intermediate_fos: None) -> None:
-        self.category_id = category_id
-        self.category_name = category_name
-        self.level_id = level_id
-        self.is_mock = is_mock
-        self.contents = contents
-        self.rating_scale = rating_scale
-        self.mark_scale = mark_scale
-        self.code = code
-        self.mark5 = mark5
-        self.mark4 = mark4
-        self.mark3 = mark3
-        self.mark2 = mark2
-        self.task1 = task1
-        self.task2 = task2
-        self.fos_inter_control_task1 = fos_inter_control_task1
-        self.fos_inter_control_task2 = fos_inter_control_task2
-        self.fos_current_control_task1 = fos_current_control_task1
-        self.fos_current_control_task2 = fos_current_control_task2
-        self.download_fos_url = download_fos_url
-        self.upload_fos_url = upload_fos_url
-        self.delete_fos_url = delete_fos_url
-        self.has_current_fos = has_current_fos
-        self.has_intermediate_fos = has_intermediate_fos
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
 
 class CompetenceBoard:
@@ -417,6 +462,97 @@ class CompetenceBoard:
 
         add_table_header_text(doc, p_header_text)
         table = add_table_comps(doc, self, headers, level_names, cells_text, merge_cols, cols_width, styles, table)
+        if save is not None:
+            doc.save(save)
+        return table
+
+    def generate_table2(self, save=None, doc=None, table=None):
+        if doc is None:
+            doc = Document()
+
+        current_section = doc.sections[-1]
+        rotate(current_section)
+        set_margins(current_section, top=3, left=2, bottom=1.5, right=2)
+
+        headers = [
+            {
+                0: 'Компетенция',
+                1: 'Запоминание',
+                2: 'Оценочные средства',
+                4: 'Понимание',
+                5: 'Оценочные средства',
+                7: 'Применение',
+                8: 'Оценочные средства',
+            },
+            {
+                2: 'текущий контроль',
+                3: 'промежуточный контроль',
+                5: 'текущий контроль',
+                6: 'промежуточный контроль',
+                8: 'текущий контроль',
+                9: 'промежуточный контроль',
+            }
+        ]
+
+        cells_text = {
+            2: '-',
+            3: 'Ответы на вопросы №1-15',
+            5: '-',
+            6: 'Прохождение производственной практики. Оформление и защита отчета.',
+            8: '-',
+            9: 'Прохождение производственной практики. Оформление и защита отчета.',
+        }
+
+        styles = [
+            {
+                'indexes': range(10),
+                'type': 'header',
+                'func': lambda x: cell_header(doc, x)
+            },
+            {
+                'indexes': range(10),
+                'type': 'header',
+                'func': cell_center
+            },
+            {
+                'indexes': [0, 2, 3, 5, 6, 8, 9],
+                'type': 'body',
+                'func': lambda x: cell_body(doc, x)
+            },
+            {
+                'indexes': [1, 4, 7],
+                'type': 'body',
+                'func': lambda x: cell_body_level(doc, x)
+            },
+            {
+                'indexes': range(10),
+                'type': 'header,body',
+                'func': cell_border
+            }
+        ]
+        cols_width = [1, 3, 1, 1, 3, 1, 1, 3, 1, 1]
+        p_name = "Название практики"
+        if self.rp is not None and self.rp.plan is not None and self.rp.plan.discipline is not None:
+            p_name = self.rp.plan.discipline.name
+        p_header_text = f"Таблица 4 - Оценочные материалы (оценочные средства) по производственной практике «{p_name}»"
+
+        style = doc.styles.add_style('TableBodyStyle', WD_STYLE_TYPE.PARAGRAPH)
+        font = style.font
+        font.name = 'Times New Roman'
+        font.size = Pt(12)
+
+        style = doc.styles.add_style('TableBodyLevelsStyle', WD_STYLE_TYPE.PARAGRAPH)
+        font = style.font
+        font.name = 'Times New Roman'
+        font.size = Pt(10)
+
+        style = doc.styles.add_style('TableHeaderStyle', WD_STYLE_TYPE.PARAGRAPH)
+        font = style.font
+        font.name = 'Times New Roman'
+        font.size = Pt(12)
+
+        add_table_header_text(doc, p_header_text)
+        table = add_table_comps2(doc, self, headers, cells_text, cols_width, styles, table)
         if save is not None:
             doc.save(save)
         return table

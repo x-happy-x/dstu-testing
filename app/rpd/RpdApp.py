@@ -117,22 +117,15 @@ class Department:
         self.has_permission = kwargs.get('hasPermission', None)
         self.year = kwargs.get('year', None)
 
-    def set(self, id: int, number: int, name: str, has_permission: bool) -> None:
-        self.id = id
-        self.number = number
-        self.name = name
-        self.has_permission = has_permission
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def disciplines(self, show_only_with_rp=False, hide_without_students=False) -> Result:
 
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
-        s1 = None
-        if len(sn) > MAX_LENGTH:
-            s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
-        current_dir = os.path.join(self.path, sn)
         filename = f"disciplines_{show_only_with_rp}_{hide_without_students}.json"
-        filepath = os.path.join(current_dir, filename)
+        current_dir, filepath = self.get_file_path(filename)
 
         message = None
         ds = []
@@ -156,9 +149,6 @@ class Department:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
                     save_json(response_data, filepath)
-                    if s1 is not None:
-                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
-                            f.write(s1)
                     if response_data['result']:
                         items = response_data['data']['planItems']['items']
                         for item in items:
@@ -168,6 +158,18 @@ class Department:
             except Exception as e:
                 return Result(ds, False, str(e))
         return Result(ds, message=message)
+
+    def get_file_path(self, filename, replace=False):
+        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
+        current_dir = os.path.join(self.path, sn)
+        if s1 is not None and (replace or not os.path.exists(os.path.join(current_dir, 'full_name.txt'))):
+            with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                f.write(s1)
+        return current_dir, os.path.join(current_dir, filename)
 
     def __str__(self):
         return self.__repr__()
@@ -197,24 +199,15 @@ class Discipline:
         self.is_practice = kwargs.get('isPractice', None)
         self.is_module = kwargs.get('isModule', None)
 
-    def set(self, num: int, name: str, dep_id: int, object_type: int, is_practice: bool, is_module: bool) -> None:
-        self.num = num
-        self.name = name
-        self.dep_id = dep_id
-        self.object_type = object_type
-        self.is_practice = is_practice
-        self.is_module = is_module
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def plans(self, show_only_with_rp=False, hide_without_students=False) -> Result:
 
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
-        s1 = None
-        if len(sn) > MAX_LENGTH:
-            s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
-        current_dir = os.path.join(self.path, sn)
         filename = f"plans_{show_only_with_rp}_{hide_without_students}.json"
-        filepath = os.path.join(current_dir, filename)
+        current_dir, filepath = self.get_file_path(filename)
 
         message = None
         ds = []
@@ -241,9 +234,6 @@ class Discipline:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
                     save_json(response_data, filepath)
-                    if s1 is not None:
-                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
-                            f.write(s1)
                     if response_data['result']:
                         items = response_data['data']['rup']['items']
                         for item in items:
@@ -253,6 +243,18 @@ class Discipline:
             except Exception as e:
                 return Result(ds, False, str(e))
         return Result(ds, message=message)
+
+    def get_file_path(self, filename, replace=False):
+        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
+        current_dir = os.path.join(self.path, sn)
+        if s1 is not None and (replace or not os.path.exists(os.path.join(current_dir, 'full_name.txt'))):
+            with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                f.write(s1)
+        return current_dir, os.path.join(current_dir, filename)
 
     def __str__(self):
         return self.__repr__()
@@ -299,29 +301,15 @@ class Plan:
         self.rp_count = kwargs.get('rpCount', None)
         self.url = kwargs.get('url', None)
 
-    def set(self, rup_row_id: int, rup_id: int, has_draft: bool, is_draft_currupted: bool, index: str, rup_name: str,
-            fgos_type_name: str, study_form: str, study_level: str, spec_name: str, sub_spec_name: str,
-            nagr_rows: List[Any], rp_count: int, url: str) -> None:
-        self.rup_row_id = rup_row_id
-        self.rup_id = rup_id
-        self.has_draft = has_draft
-        self.is_draft_currupted = is_draft_currupted
-        self.index = index
-        self.rup_name = rup_name
-        self.fgos_type_name = fgos_type_name
-        self.study_form = study_form
-        self.study_level = study_level
-        self.spec_name = spec_name
-        self.sub_spec_name = sub_spec_name
-        self.nagr_rows = nagr_rows
-        self.rp_count = rp_count
-        self.url = url
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def rps(self) -> Result:
 
-        current_dir = os.path.join(self.path, self.rup_name.strip(' \r\n\t').replace("\"", "'"))
         filename = f"rps.json"
-        filepath = os.path.join(current_dir, filename)
+        current_dir, filepath = self.get_file_path(filename)
 
         message = None
         ds = []
@@ -355,6 +343,18 @@ class Plan:
             except Exception as e:
                 return Result(ds, False, str(e))
         return Result(ds, message=message)
+
+    def get_file_path(self, filename, replace=False):
+        sn = self.rup_name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
+        current_dir = os.path.join(self.path, sn)
+        if s1 is not None and (replace or not os.path.exists(os.path.join(current_dir, 'full_name.txt'))):
+            with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                f.write(s1)
+        return current_dir, os.path.join(current_dir, filename)
 
     def __str__(self):
         return self.__repr__()
@@ -403,22 +403,10 @@ class RP:
         self.direction_oop_name = kwargs.get('directionOOPName', None)
         self.status = kwargs.get('status', None)
 
-    def set(self, id: int, title_id: int, rup_row_id: int, name: str, modified_on: datetime, user: str, owner: str,
-            has_draft: bool, is_draft_currupted: bool, direction_oop_id: int, direction_oop_code: str,
-            direction_oop_name: str, status: None) -> None:
-        self.id = id
-        self.title_id = title_id
-        self.rup_row_id = rup_row_id
-        self.name = name
-        self.modified_on = modified_on
-        self.user = user
-        self.owner = owner
-        self.has_draft = has_draft
-        self.is_draft_currupted = is_draft_currupted
-        self.direction_oop_id = direction_oop_id
-        self.direction_oop_code = direction_oop_code
-        self.direction_oop_name = direction_oop_name
-        self.status = status
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def summary(self):
 
@@ -427,14 +415,8 @@ class RP:
             Params.rp_id: self.id,
         })
 
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
-        s1 = None
-        if len(sn) > MAX_LENGTH:
-            s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
-        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"summary.json"
-        filepath = os.path.join(current_dir, filename)
+        current_dir, filepath = self.get_file_path(filename)
 
         message = None
         ds = {}
@@ -451,9 +433,6 @@ class RP:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
                     save_json(response_data, filepath)
-                    if s1 is not None:
-                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
-                            f.write(s1)
                     if response_data['result']:
                         items = response_data
                         ds = items
@@ -471,14 +450,8 @@ class RP:
             Params.rp_id: self.id,
         })
 
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
-        s1 = None
-        if len(sn) > MAX_LENGTH:
-            s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
-        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"fos.json"
-        filepath = os.path.join(current_dir, filename)
+        current_dir, filepath = self.get_file_path(filename)
 
         message = None
         ds = {}
@@ -499,9 +472,6 @@ class RP:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
                     save_json(response_data, filepath)
-                    if s1 is not None:
-                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
-                            f.write(s1)
                     if response_data['result']:
                         items = response_data['data']
                         ds['Контрольные вопросы и задания'] = items['field1']
@@ -521,14 +491,8 @@ class RP:
             Params.rp_id: self.id,
         })
 
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
-        s1 = None
-        if len(sn) > MAX_LENGTH:
-            s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
-        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"competencies.json"
-        filepath = os.path.join(current_dir, filename)
+        current_dir, filepath = self.get_file_path(filename)
 
         message = None
         ds = CompetenceBoard(self)
@@ -546,9 +510,6 @@ class RP:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
                     save_json(response_data, filepath)
-                    if s1 is not None:
-                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
-                            f.write(s1)
                     if response_data['result'] and not response_data['data']['isEmpty']:
                         items = response_data['data']['items']
                         for item in items:
@@ -567,14 +528,8 @@ class RP:
             Params.rp_id: self.id,
         })
 
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
-        s1 = None
-        if len(sn) > MAX_LENGTH:
-            s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
-        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"books.json"
-        filepath = os.path.join(current_dir, filename)
+        current_dir, filepath = self.get_file_path(filename)
 
         message = None
         ds = []
@@ -592,9 +547,6 @@ class RP:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
                     save_json(response_data, filepath)
-                    if s1 is not None:
-                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
-                            f.write(s1)
                     if response_data['result']:
                         items = response_data['data']['cards']
                         for item in items:
@@ -611,14 +563,8 @@ class RP:
             Params.rp_id: self.id,
         })
 
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
-        s1 = None
-        if len(sn) > MAX_LENGTH:
-            s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
-        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"appx.json"
-        filepath = os.path.join(current_dir, filename)
+        current_dir, filepath = self.get_file_path(filename)
 
         message = None
         ds = []
@@ -636,9 +582,6 @@ class RP:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
                     save_json(response_data, filepath)
-                    if s1 is not None:
-                        with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
-                            f.write(s1)
                     if response_data['result']:
                         items = response_data['data']['cards']
                         for item in items:
@@ -648,6 +591,18 @@ class RP:
             except Exception as e:
                 return Result(ds, False, str(e))
         return Result(ds, message=message)
+
+    def get_file_path(self, filename, replace=False):
+        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        s1 = None
+        if len(sn) > MAX_LENGTH:
+            s1 = sn
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
+        current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
+        if s1 is not None and (replace or not os.path.exists(os.path.join(current_dir, 'full_name.txt'))):
+            with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
+                f.write(s1)
+        return current_dir, os.path.join(current_dir, filename)
 
     def __str__(self):
         return self.__repr__()
@@ -698,15 +653,10 @@ class Appx:
         self.length = kwargs.get('length', None)
         self.type = kwargs.get('type', None)
 
-    def set(self, id: int, name: str, created: datetime, modified: datetime, download_link: str, length: float,
-            type: int) -> None:
-        self.id = id
-        self.name = name
-        self.created = created
-        self.modified = modified
-        self.download_link = download_link
-        self.length = length
-        self.type = type
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def __str__(self):
         return self.__repr__()
