@@ -1,5 +1,6 @@
 from docx.opc.coreprops import CoreProperties
 
+from .Comptencies import CompetenceBoard, Competence, Indicator, Level
 from .api import RpdManagerApi, RpdApi, get_now_year, Params
 from app.parser.json import open_json, save_json
 import json
@@ -10,6 +11,7 @@ import docx
 
 MAX_LENGTH = 200
 MAX_WORDS = 10
+
 
 class Result:
     success: bool
@@ -127,7 +129,7 @@ class Department:
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, sn)
         filename = f"disciplines_{show_only_with_rp}_{hide_without_students}.json"
         filepath = os.path.join(current_dir, filename)
@@ -209,7 +211,7 @@ class Discipline:
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, sn)
         filename = f"plans_{show_only_with_rp}_{hide_without_students}.json"
         filepath = os.path.join(current_dir, filename)
@@ -429,7 +431,7 @@ class RP:
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"summary.json"
         filepath = os.path.join(current_dir, filename)
@@ -473,7 +475,7 @@ class RP:
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"fos.json"
         filepath = os.path.join(current_dir, filename)
@@ -523,7 +525,7 @@ class RP:
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"competencies.json"
         filepath = os.path.join(current_dir, filename)
@@ -569,7 +571,7 @@ class RP:
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"books.json"
         filepath = os.path.join(current_dir, filename)
@@ -613,7 +615,7 @@ class RP:
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS-1])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
         filename = f"appx.json"
         filepath = os.path.join(current_dir, filename)
@@ -738,195 +740,6 @@ class Appx:
         return (f"Приложение (id:{self.id}, name:{self.name}, created:{self.created}, "
                 f"modified:{self.modified}, download_link:{self.download_link}, "
                 f"length:{self.length}, type:{self.type})")
-
-
-class Competence:
-    card_id: int
-    comp_id: int
-    comp_code: str
-    comp_description: str
-    indicator_list: List
-
-    def __init__(self, **kwargs):
-        self.comp_id = kwargs.get('compId')
-        self.card_id = kwargs.get('cardId')
-        self.comp_code = kwargs.get('compCode')
-        self.comp_description = kwargs.get('compDescription')
-
-        self.indicator_list = []
-
-    def set(self, comp_id: int, card_id: int, comp_code: str, comp_description: str) -> None:
-        self.comp_id = comp_id
-        self.card_id = card_id
-        self.comp_code = comp_code
-        self.comp_description = comp_description
-
-    def add_indicator(self, indicator=None, **kwargs):
-        if indicator is not None:
-            self.indicator_list.append(indicator)
-        else:
-            self.indicator_list.append(Indicator(self, **kwargs))
-
-    def indicators(self):
-        return self.indicator_list
-
-
-class Indicator:
-    competence: Competence
-    indicator_id: int
-    indi_code: str
-    indi_description: str
-    level_list: List
-
-    def __init__(self, competence: Competence, **kwargs):
-        self.competence = competence
-        self.indicator_id = kwargs.get('indicatorId')
-        self.indi_code = kwargs.get('indiCode')
-        self.indi_description = kwargs.get('indiDescription')
-        self.level_list = []
-
-    def set(self, indicator_id: int, indi_code: str, indi_description: str):
-        self.indicator_id = indicator_id
-        self.indi_code = indi_code
-        self.indi_description = indi_description
-
-    def add_level(self, level=None, **kwargs):
-        if level is not None:
-            self.level_list.append(level)
-        else:
-            self.level_list.append(Level(self, **kwargs))
-
-    def levels(self):
-        return self.level_list
-
-
-class Level:
-    indicator: Indicator
-    category_id: int
-    category_name: str
-    level_id: int
-    is_mock: bool
-    contents: str
-    rating_scale: str
-    mark_scale: str
-    code: str
-    mark5: None
-    mark4: None
-    mark3: None
-    mark2: None
-    task1: None
-    task2: None
-    fos_inter_control_task1: None
-    fos_inter_control_task2: None
-    fos_current_control_task1: None
-    fos_current_control_task2: None
-    download_fos_url: str
-    upload_fos_url: str
-    delete_fos_url: str
-    has_current_fos: None
-    has_intermediate_fos: None
-
-    def __init__(self, indicator: Indicator, **kwargs):
-        self.indicator = indicator
-        self.category_id = kwargs.get('category_id')
-        self.category_name = kwargs.get('categoryName')
-        self.level_id = kwargs.get('levelId')
-        self.is_mock = kwargs.get('isMock')
-        self.contents = kwargs.get('contents')
-        self.rating_scale = kwargs.get('ratingScale')
-        self.mark_scale = kwargs.get('markScale')
-        self.code = kwargs.get('code')
-        self.mark5 = kwargs.get('mark5')
-        self.mark4 = kwargs.get('mark4')
-        self.mark3 = kwargs.get('mark3')
-        self.mark2 = kwargs.get('mark2')
-        self.task1 = kwargs.get('task1')
-        self.task2 = kwargs.get('task2')
-        self.fos_inter_control_task1 = kwargs.get('fos_interControl_task1')
-        self.fos_inter_control_task2 = kwargs.get('fos_interControl_task2')
-        self.fos_current_control_task1 = kwargs.get('fos_currentControl_task1')
-        self.fos_current_control_task2 = kwargs.get('fos_currentControl_task2')
-        self.download_fos_url = kwargs.get('downloadFosUrl')
-        self.upload_fos_url = kwargs.get('uploadFosUrl')
-        self.delete_fos_url = kwargs.get('deleteFosUrl')
-        self.has_current_fos = kwargs.get('hasCurrentFos')
-        self.has_intermediate_fos = kwargs.get('hasIntermediateFos')
-
-    def set(self, category_id: int, category_name: str, level_id: int, is_mock: bool, contents: str, rating_scale: str,
-            mark_scale: str, code: str, mark5: None, mark4: None, mark3: None, mark2: None, task1: None, task2: None,
-            fos_inter_control_task1: None, fos_inter_control_task2: None, fos_current_control_task1: None,
-            fos_current_control_task2: None, download_fos_url: str, upload_fos_url: str, delete_fos_url: str,
-            has_current_fos: None, has_intermediate_fos: None) -> None:
-        self.category_id = category_id
-        self.category_name = category_name
-        self.level_id = level_id
-        self.is_mock = is_mock
-        self.contents = contents
-        self.rating_scale = rating_scale
-        self.mark_scale = mark_scale
-        self.code = code
-        self.mark5 = mark5
-        self.mark4 = mark4
-        self.mark3 = mark3
-        self.mark2 = mark2
-        self.task1 = task1
-        self.task2 = task2
-        self.fos_inter_control_task1 = fos_inter_control_task1
-        self.fos_inter_control_task2 = fos_inter_control_task2
-        self.fos_current_control_task1 = fos_current_control_task1
-        self.fos_current_control_task2 = fos_current_control_task2
-        self.download_fos_url = download_fos_url
-        self.upload_fos_url = upload_fos_url
-        self.delete_fos_url = delete_fos_url
-        self.has_current_fos = has_current_fos
-        self.has_intermediate_fos = has_intermediate_fos
-
-
-class CompetenceBoard:
-    rp: RP
-    competence_list: List[Competence]
-
-    def __init__(self, rp: RP):
-        self.rp = rp
-        self.competence_list = []
-
-    def add_item(self, item):
-        comp: Competence
-        indicator: Indicator
-        cmp: Competence | None = None
-
-        # Поиск компетенции в имеющихся
-        for comp in self.competence_list:
-            if comp.comp_id == item['compId']:
-                cmp = comp
-                break
-
-        # Если нет добавление нового
-        if cmp is None:
-            cmp = Competence(**item)
-            self.competence_list.append(cmp)
-
-        ind: Indicator | None = None
-        # Поиск компетенции в имеющихся
-        for indicator in cmp.indicators():
-            if indicator.indicator_id == item['indicatorId']:
-                ind = indicator
-                break
-
-        # Если нет добавление нового
-        if ind is None:
-            cmp.add_indicator(**item)
-            ind = cmp.indicators()[-1]
-
-        # Если уровень пустой не добавляем ничего
-        if item['contents'] is None or len(item['contents'].strip()) < 3:
-            return
-
-        # Иначе добавляем новый уровень
-        ind.add_level(**item)
-
-    def competencies(self):
-        return self.competence_list
 
 
 class Book:
