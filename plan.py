@@ -248,7 +248,7 @@ def plan2excel(plans, preps, departments, fos_status, kaf, save=None):
                 if sheet_name not in wb.sheetnames:
                     ws = wb.copy_worksheet(wb['ШАБЛОН'])
                     ws.title = sheet_name
-                    # wb.create_sheet(sheet_name)
+
                 ws = wb[sheet_name]
                 ws: Worksheet
 
