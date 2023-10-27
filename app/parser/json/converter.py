@@ -13,7 +13,7 @@ def open_json(filepath):
 
 def save_json(data, save: str):
     dest = os.path.split(save)[0]
-    if not os.path.exists(dest):
+    if len(dest) > 0 and not os.path.exists(dest):
         os.makedirs(dest)
     with open(save, "w", encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False)

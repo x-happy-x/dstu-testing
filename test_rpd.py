@@ -9,7 +9,7 @@ from typing import Callable
 import pandas as pd
 
 from app.parser.json import save_json, open_json
-from app.rpd.RpdApp import Department, Discipline, Plan, RP, Appx, get_now_year, Params, CompetenceBoard
+from app.rpd.RpdApp import Department, Discipline, Plan, RP, Appx, get_now_year, Params, CompetenceBoard, Result
 from app.rpd import api, RpdApp
 
 from openpyxl import load_workbook
@@ -256,6 +256,8 @@ for year in [get_now_year()]:
             REPORT_DEPARTMENT[discipline.name] = REPORT_DISCIPLINE
         REPORT_YEAR[department.name] = REPORT_DEPARTMENT
     REPORT[year] = REPORT_YEAR
+
+
 
 if competence_settings['Проверять']:
     competence_settings['Файл'].save(competence_settings['Сохранить'])

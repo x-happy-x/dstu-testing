@@ -1,3 +1,7 @@
+import random
+import time
+
+import pandas as pd
 from docx.opc.coreprops import CoreProperties
 
 from .Comptencies import CompetenceBoard, Competence, Indicator, Level
@@ -11,6 +15,57 @@ import docx
 
 MAX_LENGTH = 200
 MAX_WORDS = 10
+
+prof2group = [
+    # Бакалавры
+    {
+        'name': 'ВЗПИ',
+        'code': '09.03.03',
+        'direction': 'Прикладная информатика в информационной сфере',
+        'studyForm': 'заочная'
+    }, {
+        'name': 'ВИС',
+        'code': '09.03.02',
+        'direction': 'Информационные системы и технологии',
+        'studyForm': 'очная'
+    }, {
+        'name': 'ВИАС',
+        'code': '09.03.02',
+        'direction': 'Web-ориентированные информационно-аналитические системы',
+        'studyForm': 'очная'
+    }, {
+        'name': 'ВОЗПИ',
+        'code': '09.03.03',
+        'direction': 'Прикладная информатика в информационной сфере',
+        'studyForm': 'очно-заочная'
+    },
+    # Магистры
+    {
+        'name': 'МЗИН',
+        'code': '09.04.02',
+        'direction': 'Информационные системы в научных исследованиях',
+        'studyForm': 'заочная'
+    }, {
+        'name': 'МИН',
+        'code': '09.04.02',
+        'direction': 'Информационные системы в научных исследованиях',
+        'studyForm': 'очная'
+    }, {
+        'name': 'МПИ',
+        'code': '09.04.03',
+        'direction': 'Прикладная информатика в информационной сфере',
+        'studyForm': 'очная'
+    },
+]
+
+name_clear = lambda s: (s
+                        .strip(' \r\n\t')
+                        .replace("\"", "'")
+                        .replace('/', '-')
+                        .replace('\\', '/')
+                        .replace(':', '-')
+                        .replace('?', '!')
+                        .replace('\r', ''))
 
 
 class Result:
@@ -55,11 +110,175 @@ class RpdApp:
         self.cache_dir = cache_dir
         self.load_cache = load_cache
         self.manager = manager
+        self.logging_level = 0
 
     def get_rpd_api(self):
         if self.rpd_api is None:
             self.rpd_api = RpdApi(session=self.manager.session)
         return self.rpd_api
+
+    def logging(self, *args):
+        print("\t" * self.logging_level, *args)
+
+    def walk(self,
+             years=None,
+             department_selector=None,
+             discipline_selector=None,
+             plan_selector=None,
+             rpd_selector=None,
+             logging_on=True,
+             pause=0,
+             files_prepare=None,
+             fos_prepare=None,
+             summary_prepare=None,
+             competencies_prepare=None,
+             rpd_prepare=None
+             ):
+
+        department: Department
+        discipline: Discipline
+        plan: Plan
+        rpd: RP
+        file: Appx
+        cb: CompetenceBoard
+
+        if years is None:
+            years = [get_now_year()]
+
+        if department_selector is None:
+            department_selector = lambda x: True
+        if discipline_selector is None:
+            discipline_selector = lambda x: True
+        if plan_selector is None:
+            plan_selector = lambda x: True
+        if rpd_selector is None:
+            rpd_selector = lambda x: True
+
+        self.logging_level = 0
+
+        # Весь отчет
+        REPORT = {}
+
+        # Учебный год
+        for year in years:
+
+            # Логирование
+            if logging_on:
+                self.logging_level = 0
+                self.logging("Год", year)
+                self.logging_level = 1
+
+            # Отчет за год
+            REPORT_YEAR = {}
+
+            departments = self.departments(year)
+            time.sleep(random.random() * pause)  # pause
+
+            # Кафедра
+            for department in departments(department_selector):
+
+                # Логирование
+                if logging_on:
+                    self.logging_level = 1
+                    self.logging("Кафедра", department.name)
+                    self.logging_level = 2
+
+                # Отчет за кафедру
+                REPORT_DEPARTMENT = {}
+
+                disciplines = department.disciplines()
+                time.sleep(random.random() * pause)  # pause
+
+                # Дисциплина (модуль)
+                for discipline in disciplines(discipline_selector):
+
+                    # Логирование
+                    if logging_on:
+                        self.logging_level = 2
+                        self.logging("Дисциплина", discipline.name)
+                        self.logging_level = 3
+
+                    # Отчет за дисциплину
+                    REPORT_DISCIPLINE = {}
+
+                    plans = discipline.plans()
+                    time.sleep(random.random() * pause)  # pause
+
+                    # Учебный план
+                    for plan in plans(plan_selector):
+
+                        # Логирование
+                        if logging_on:
+                            self.logging_level = 3
+                            self.logging("Учебный план", plan.rup_name)
+                            self.logging_level = 4
+
+                        # Отчет за учебный план
+                        REPORT_PLAN = {}
+
+                        rps = plan.rps()
+                        time.sleep(random.random() * pause)  # pause
+
+                        # Рабочая программа
+                        for rpd in rps(rpd_selector):
+
+                            # Логирование
+                            if logging_on:
+                                self.logging_level = 4
+                                self.logging(f"Рабочая программа {rpd.id}:", rpd.name)
+                                self.logging_level = 5
+
+                            # Отчет за учебный план
+                            REPORT_RPD = {
+                                'group': rpd.group(),
+                                'url': rpd.link()
+                            }
+
+                            # Обработка приложения
+                            if files_prepare:
+                                result = rpd.appxs()
+                                if isinstance(files_prepare, list):
+                                    REPORT_RPD['Приложение'] = [fp(self, rpd, result) for fp in files_prepare]
+                                else:
+                                    REPORT_RPD['Приложение'] = files_prepare(self, rpd, result)
+
+                            # Обработка ФОСа
+                            if fos_prepare:
+                                result = rpd.FOS()
+                                if isinstance(fos_prepare, list):
+                                    REPORT_RPD['ФОС'] = [fp(self, rpd, result) for fp in fos_prepare]
+                                else:
+                                    REPORT_RPD['ФОС'] = fos_prepare(self, rpd, result)
+
+                            # Обработка часов
+                            if summary_prepare:
+                                result = rpd.summary()
+                                if isinstance(summary_prepare, list):
+                                    REPORT_RPD['Часы'] = [sp(self, rpd, result) for sp in summary_prepare]
+                                else:
+                                    REPORT_RPD['Часы'] = summary_prepare(self, rpd, result)
+
+                            # Обработка компетенций
+                            if competencies_prepare:
+                                result = rpd.competencies_board()
+                                if isinstance(competencies_prepare, list):
+                                    REPORT_RPD['Компетенции'] = [cp(self, rpd, result) for cp in competencies_prepare]
+                                else:
+                                    REPORT_RPD['Компетенции'] = competencies_prepare(self, rpd, result)
+
+                            # Обработка РПД
+                            if rpd_prepare:
+                                if isinstance(rpd_prepare, list):
+                                    REPORT_RPD['РПД'] = [cp(self, rpd) for cp in rpd_prepare]
+                                else:
+                                    REPORT_RPD['РПД'] = rpd_prepare(self, rpd)
+
+                            REPORT_PLAN[rpd.id] = REPORT_RPD
+                        REPORT_DISCIPLINE[plan.rup_name] = REPORT_PLAN
+                    REPORT_DEPARTMENT[discipline.name] = REPORT_DISCIPLINE
+                REPORT_YEAR[department.name] = REPORT_DEPARTMENT
+            REPORT[year] = REPORT_YEAR
+        return REPORT
 
     def departments(self, year=None) -> Result:
         if year is None:
@@ -160,12 +379,14 @@ class Department:
         return Result(ds, message=message)
 
     def get_file_path(self, filename, replace=False):
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        sn = name_clear(self.name)
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
             sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, sn)
+        if not os.path.exists(current_dir):
+            os.makedirs(current_dir)
         if s1 is not None and (replace or not os.path.exists(os.path.join(current_dir, 'full_name.txt'))):
             with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
                 f.write(s1)
@@ -245,12 +466,14 @@ class Discipline:
         return Result(ds, message=message)
 
     def get_file_path(self, filename, replace=False):
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        sn = name_clear(self.name)
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
             sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, sn)
+        if not os.path.exists(current_dir):
+            os.makedirs(current_dir)
         if s1 is not None and (replace or not os.path.exists(os.path.join(current_dir, 'full_name.txt'))):
             with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
                 f.write(s1)
@@ -345,12 +568,14 @@ class Plan:
         return Result(ds, message=message)
 
     def get_file_path(self, filename, replace=False):
-        sn = self.rup_name.strip(' \r\n\t').replace("\"", "'")
+        sn = name_clear(self.rup_name)
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
             sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, sn)
+        if not os.path.exists(current_dir):
+            os.makedirs(current_dir)
         if s1 is not None and (replace or not os.path.exists(os.path.join(current_dir, 'full_name.txt'))):
             with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
                 f.write(s1)
@@ -408,14 +633,35 @@ class RP:
             if hasattr(self, key):
                 setattr(self, key, value)
 
-    def summary(self):
+    def group(self):
+        result = self.title()
+        code = None
+        direction = None
+        study_form = None
+        if result.success:
+            code = result.data['data']['rup']['direction']['code']
+            direction = result.data['data']['rup']['direction']['name']
+            study_form = result.data['data']['rup']['studyForm']
+            for g in prof2group:
+                if g['direction'] == direction and g['code'] == code and g['studyForm'] == study_form:
+                    return g
+        else:
+            self.app.logging(result.message)
+        return {
+            'name': None,
+            'code': code,
+            'direction': direction,
+            'studyForm': study_form
+        }
+
+    def title(self):
 
         self.api.set_dict({
             Params.rup_row_id: self.rup_row_id,
             Params.rp_id: self.id,
         })
 
-        filename = f"summary.json"
+        filename = "title.json"
         current_dir, filepath = self.get_file_path(filename)
 
         message = None
@@ -428,7 +674,7 @@ class RP:
                 items = response_data
                 ds = items
         else:
-            response = self.api.get_summary()
+            response = self.api.get_title()
             try:
                 if response.status_code == 200:
                     response_data = json.loads(response.text)
@@ -437,10 +683,46 @@ class RP:
                         items = response_data
                         ds = items
                 else:
-                    print(response.status_code, response.text)
+                    self.app.logging(response.status_code, response.text)
                     return Result(ds, False, response.text)
             except Exception as e:
-                print(e)
+                self.app.logging(e)
+                return Result(ds, False, str(e))
+        return Result(ds, message=message)
+
+    def summary(self):
+
+        self.api.set_dict({
+            Params.rup_row_id: self.rup_row_id,
+            Params.rp_id: self.id,
+        })
+
+        filename = "summary.json"
+        current_dir, filepath = self.get_file_path(filename)
+
+        message = None
+        ds = {}
+
+        if self.app.load_cache and os.path.exists(filepath):
+            message = 'from cache'
+            response_data = open_json(filepath)
+            if response_data['result']:
+                items = response_data
+                ds = Summary(self.app, self, **items['data'])
+        else:
+            response = self.api.get_summary()
+            try:
+                if response.status_code == 200:
+                    response_data = json.loads(response.text)
+                    save_json(response_data, filepath)
+                    if response_data['result']:
+                        items = response_data
+                        ds = Summary(self.app, self, **items['data'])
+                else:
+                    self.app.logging(response.status_code, response.text)
+                    return Result(ds, False, response.text)
+            except Exception as e:
+                self.app.logging(e)
                 return Result(ds, False, str(e))
         return Result(ds, message=message)
 
@@ -450,8 +732,8 @@ class RP:
             Params.rp_id: self.id,
         })
 
-        filename = f"fos.json"
-        current_dir, filepath = self.get_file_path(filename)
+        filename = "fos.json"
+        _, filepath = self.get_file_path(filename)
 
         message = None
         ds = {}
@@ -515,10 +797,10 @@ class RP:
                         for item in items:
                             ds.add_item(item)
                 else:
-                    print(response.status_code, response.text)
+                    self.app.logging(response.status_code, response.text)
                     return Result(ds, False, response.text)
             except Exception as e:
-                print(e)
+                self.app.logging(e)
                 return Result(ds, False, str(e))
         return Result(ds, message=message)
 
@@ -592,13 +874,18 @@ class RP:
                 return Result(ds, False, str(e))
         return Result(ds, message=message)
 
+    def link(self):
+        return f"https://rpd.donstu.ru/Rp?{Params.rp_id}={self.id}&{Params.rup_row_id}={self.rup_row_id}"
+
     def get_file_path(self, filename, replace=False):
-        sn = self.name.strip(' \r\n\t').replace("\"", "'")
+        sn = name_clear(self.name)
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
             sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
         current_dir = os.path.join(self.path, f"{self.id}_{sn}/")
+        if not os.path.exists(current_dir):
+            os.makedirs(current_dir)
         if s1 is not None and (replace or not os.path.exists(os.path.join(current_dir, 'full_name.txt'))):
             with open(os.path.join(current_dir, 'full_name.txt'), 'w') as f:
                 f.write(s1)
@@ -645,6 +932,8 @@ class Appx:
 
         self.id = kwargs.get('id', None)
         self.name = kwargs.get('name', None)
+        if self.name is not None:
+            self.name = self.name.replace('\u0306', ' ')
 
         self.created = try_parse_date(kwargs.get('created', None))
         self.modified = try_parse_date(kwargs.get('modified', None))
@@ -669,21 +958,36 @@ class Appx:
     def save(self, path=None):
         if path is None:
             path = self.path
-        response = self.api.session.get("https://rpd.donstu.ru" + self.download_link)
+        self.app.logging("LOAD", self.name, self.link())
+        response = self.api.session.get(self.link())
         if response.status_code == 200:
-            with open(os.path.join(path, self.name), "wb") as f:
+            with open(self.localpath(path), "wb") as f:
                 f.write(response.content)
-                print("Файл сохранен:", os.path.join(path, self.name))
+                self.app.logging("Файл сохранен:", self.localpath(path))
         else:
-            print(response.status_code, response.content)
+            self.app.logging(response.status_code, response.content)
 
-    def metadata(self, path=None) -> CoreProperties:
+    def link(self):
+        return "https://rpd.donstu.ru" + self.download_link
+
+    def localpath(self, path=None):
         if path is None:
             path = self.path
-        file = open(os.path.join(path, self.name), 'rb')
-        doc = docx.Document(file)
-        file.close()
-        prop = doc.core_properties
+        return os.path.join(path, self.name).replace('\\', '/')
+
+    def metadata(self, path=None) -> CoreProperties | None:
+        if path is None:
+            path = self.path
+        if not (self.name.endswith('.doc') or self.name.endswith('.docx')):
+            return None
+        try:
+            file = open(os.path.join(path, self.name), 'rb')
+            doc = docx.Document(file)
+            file.close()
+            prop = doc.core_properties
+        except Exception as e:
+            self.app.logging("При просмотре свойств документа возникла ошибка:", e)
+            prop = None
         return prop
 
     def __repr__(self):
@@ -758,3 +1062,34 @@ class Book:
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+
+
+class Summary:
+    app: RpdApp
+    rp: RP
+
+    headers: dict
+    data: pd.DataFrame
+
+    control_types: list[dict[str, str]]
+
+    def __init__(self, app: RpdApp, rp: RP, **kwargs):
+        self.app = app
+        self.rp = rp
+
+        self.headers = kwargs.get('header')
+        self.data = pd.json_normalize(kwargs.get('items')).set_index('ВидЗанятий')
+        self.control_types = kwargs.get('controls')['rows']
+
+    def set(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+    def is_right(self):
+        for i in range(0, len(self.data.columns), 2):
+            diff_summary = self.data.iloc[:, i + 1] - self.data.iloc[:, i]
+            diff_summary_b = diff_summary != 0
+            if any(diff_summary_b):
+                return False
+        return True
