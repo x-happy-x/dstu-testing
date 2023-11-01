@@ -11,6 +11,7 @@ CATEGORY = {
 }
 
 TYPES: dict[str, str] = {
+    MULTIPLE_CHOICE_CHECKBOX: "Закрытые",
     MULTIPLE_CHOICE_RADIO: "Закрытые",
     MATCHING: "На соответствие",
     SHORT: "Открытые",

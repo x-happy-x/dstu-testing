@@ -8,7 +8,6 @@ class HEAD:
     block_start = "###### HEAD START ######"
     block_end = "######  HEAD END  ######"
 
-    r_delimiter_answer = ""
     r_delimiter_questions = "\n\n\n"
     r_delimiter_question_and_answers = "\n\n"
     r_delimiter_question_and_id = " "
@@ -147,17 +146,21 @@ class HEAD:
         return HEAD([]), lines
 
 
-def open_txt(filepath) -> str:
-    with open(filepath, "r", encoding='utf-8') as f:
-        return f.read()
+def from_file(filepath) -> str:
+    try:
+        with open(filepath, "r", encoding='utf-8') as f:
+            return f.read()
+    except UnicodeDecodeError as e:
+        with open(filepath, "r") as f:
+            return f.read()
 
 
-def save_txt(content, filepath):
+def to_file(content, filepath):
     with open(filepath, "w", encoding='utf-8') as f:
         f.write(content)
 
 
-def parse_txt(content):
+def parse(content):
     lines = content.splitlines()
     head, lines = HEAD.get_head(lines)
     questions = head.get_questions(lines)
@@ -165,4 +168,4 @@ def parse_txt(content):
 
 
 def txt2json(content):
-    return parse_txt(content)
+    return parse(content)

@@ -1,4 +1,4 @@
-import json
+from app.parser import json
 import os
 import re
 import pandas as pd
@@ -55,8 +55,7 @@ def plan2json(path, sheet, skip=None, save=None, pattern=r'[А-Я]+'):
         out[name][year][kurs][file] = subjs
 
     if save is not None:
-        with open(save, 'w', encoding='utf-8') as f:
-            json.dump(out, f, ensure_ascii=False)
+        json.to_file(out, save)
 
     return out
 
@@ -132,8 +131,7 @@ def preps2json(file, sheet, skip=None, save=None):
                 ss) > 1 else []
 
     if save is not None:
-        with open(save, 'w', encoding='utf-8') as f:
-            json.dump(preps, f, ensure_ascii=False)
+        json.to_file(preps, save)
 
     return preps
 
@@ -150,11 +148,6 @@ def get_prep(preps, subj, group, short=True):
                 continue
             finded.append(prep)
     return None if len(finded) == 0 else ", ".join(finded)
-
-
-def load_json(file):
-    with open(file, 'r', encoding='utf-8') as f:
-        return json.load(f)
 
 
 def get_departament_name(departments, code):
@@ -289,10 +282,10 @@ def plan2excel(plans, preps, departments, fos_status, kaf, save=None):
 # plans = plan2json('./УП', 'План', [2, 0], save='./plan.json')
 # preps = preps2json("./Учет.xlsx", "Учет", [2, 0], './preps.json')
 
-plans = load_json('./plan.json')
-preps = load_json('./preps.json')
-departments = load_json('./.cache/2023-2024/departments.json')
-fos_status = load_json('./report.json')
+plans = json.from_file('./source/plan.json')
+preps = json.from_file('./source/preps.json')
+departments = json.from_file('./.cache/2023-2024/departments.json')
+fos_status = json.from_file('./source/report.json')
 
 plan2excel(
     plans,
@@ -300,7 +293,7 @@ plan2excel(
     departments['data']['department']['items'],
     fos_status,
     9,
-    "Карта учета ОМ и тестов.xlsx"
+    "./dest/Карта учета ОМ и тестов.xlsx"
 )
 
 # history = {}

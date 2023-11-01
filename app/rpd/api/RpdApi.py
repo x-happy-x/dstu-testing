@@ -9,12 +9,14 @@ class RpdApi(BaseApi):
     }
 
     def default_query(self, url, *names, **kwargs):
-        return self.query(
-            f"https://rpd.donstu.ru/{url}",
-            kwargs,
-            kwargs.get('method', Method.GET),
-            Params.rup_row_id,
-            Params.rp_id, *names
+        return self.query2(
+            url=f"https://rpd.donstu.ru/{url}",
+            params=kwargs,
+            method=kwargs.pop('method', Method.GET),
+            param_names=[
+                Params.rup_row_id,
+                Params.rp_id
+            ]
         )
 
     def get(self, **kwargs):
@@ -34,7 +36,11 @@ class RpdApi(BaseApi):
         :param kwargs: обязательных нет, но возможны rup_row_id, rpd_id и title_id
         :return: Response
         """
-        return self.query('https://rpd.donstu.ru/RpdBase/GetDrafts', kwargs, Method.GET)
+        return self.query2(
+            url='https://rpd.donstu.ru/RpdBase/GetDrafts',
+            params=kwargs,
+            method=Method.GET
+        )
 
     def get_reports(self, **kwargs):
         """
@@ -122,14 +128,13 @@ class RpdApi(BaseApi):
         :param data: rup_row_id и rp_id - обязательные аргументы
         :return: Response
         """
-        if data is None:
-            data = {}
-        return self.query(
-            'https://rpd.donstu.ru/Content/GetSummary',
-            data,
-            Method.POST,
-            Params.rup_row_id,
-            Params.rp_id
+        return self.query2(
+            url='https://rpd.donstu.ru/Content/GetSummary',
+            data=data,
+            method=Method.POST,
+            param_names=[
+                Params.rup_row_id, Params.rp_id
+            ]
         )
 
     def get_literature(self, data=None):
@@ -146,6 +151,54 @@ class RpdApi(BaseApi):
         if data is None:
             data = {}
         return self.default_query('/UpResultsIndex/GetCards', **data)
+
+    def add_reviewer(self, data=None):
+        if data is None:
+            data = {}
+        return self.query2(
+            f"https://rpd.donstu.ru/Title/AddReviewer",
+            method=Method.POST,
+            param_names=[
+                Params.rup_row_id, Params.rp_id
+            ],
+            data=data
+        )
+
+    def update_reviewer(self, data=None):
+        if data is None:
+            data = {}
+        return self.query2(
+            f"https://rpd.donstu.ru/Title/UpdateReviewer",
+            method=Method.PUT,
+            param_names=[
+                Params.rup_row_id, Params.rp_id
+            ],
+            data=data
+        )
+
+    def delete_reviewer(self, data=None):
+        if data is None:
+            data = {}
+        return self.query2(
+            f"https://rpd.donstu.ru/Title/DeleteReviewer",
+            method=Method.DELETE,
+            param_names=[
+                Params.rup_row_id, Params.rp_id
+            ],
+            data=data
+        )
+
+    def save(self, data=None):
+        if data is None:
+            data = {}
+        return self.query2(
+            f"https://rpd.donstu.ru/Rp/Save",
+            method=Method.POST,
+            param_names=[
+                Params.rup_row_id, Params.rp_id
+            ],
+            data=data
+        )
 
     def get_internet_literatures(self, data=None):
         if data is None:

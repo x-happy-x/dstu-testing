@@ -3,6 +3,7 @@ import re
 from abc import ABC, abstractmethod
 
 from app.entity import CATEGORY
+from app.parser import json, txt
 
 
 class SemanticError(Exception):
@@ -120,7 +121,6 @@ class Question:
                 break
         return f'{CATEGORY[level]} ({level} уровень)'
 
-
     def get_category_level(self):
         category = self.category.split('/')[-1]
         if ')' in category:
@@ -153,7 +153,7 @@ class Question:
             delimiter = ", "
             for answer in self.answer.options:
                 if answer.percentage > 0:
-                    right.append(answer.text)
+                    right.append(answer.text.strip(' ').lower())
                 i += 1
         else:
             for answer in self.answer.options:
@@ -187,6 +187,29 @@ class Gift:
                 return question
         return None
 
+    def add_categories(self, categories):
+
+        struct = {}
+        lines = txt.from_file(categories).split('\n')
+
+        headers = lines[0]
+        for line in lines[1:]:
+            cells = line.split(',')
+            if cells[0] not in struct:
+                struct[cells[0]] = []
+            struct[cells[0]].append({
+                'count': int(cells[1]),
+                'exist': 0,
+                'category': cells[2]
+            })
+
+        for question in self.questions:
+            for st in struct[question.get_type()[:-2]]:
+                if st['count'] > st['exist']:
+                    question.category = st['category']
+                    st['exist'] += 1
+                    break
+
     def fix_names(self):
         num = 1
         for question in self.questions:
@@ -195,6 +218,10 @@ class Gift:
 
     def __str__(self):
         return self.__repr__()
+
+    def __iadd__(self, other):
+        if isinstance(other, Gift):
+            self.questions.append(other.questions)
 
     def __repr__(self):
         lines = []

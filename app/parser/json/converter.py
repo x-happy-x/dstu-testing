@@ -2,16 +2,20 @@ import json
 import os.path
 
 
-def parse_json(content):
-    return json.loads(content)
-
-
-def open_json(filepath):
+def from_file(filepath):
     with open(filepath, "r", encoding="utf-8") as f:
         return json.loads(f.read())
 
 
-def save_json(data, save: str):
+def from_str(string):
+    return json.loads(string)
+
+
+def to_str(data):
+    return json.dumps(data)
+
+
+def to_file(data, save: str):
     dest = os.path.split(save)[0]
     if len(dest) > 0 and not os.path.exists(dest):
         os.makedirs(dest)

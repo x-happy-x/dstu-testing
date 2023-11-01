@@ -1,1 +1,1 @@
-from .converter import json2gift, open_json, parse_json, save_json
+from .converter import from_str, from_file, to_str, to_file

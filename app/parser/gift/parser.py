@@ -29,6 +29,7 @@ tokens = (
     'CATEGORY'
 )
 
+# t_QUESTION   = r'::\s*\d+.*\s*::(.*)\n*(?={)'
 t_QUESTION   = r'([^\\{\\}]|\\.)+?(?={)'
 t_QUESTIOND  = r'([^\\{\\}]|\\.)+?(?=\n)|([^\\{\\}]|\\.)+$'
 t_QUESTIONC  = r'}.+(?=[\n])|}.+$'

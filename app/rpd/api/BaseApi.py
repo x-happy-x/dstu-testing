@@ -78,7 +78,7 @@ class BaseApi:
         elif method == Method.PATCH:
             response = self.session.patch(url, data=params)
         elif method == Method.DELETE:
-            response = self.session.delete(url, params=params)
+            response = self.session.delete(url, data=params)
         elif method == Method.HEAD:
             response = self.session.head(url, params=params)
         elif method == Method.OPTIONS:
@@ -86,4 +86,46 @@ class BaseApi:
         else:
             response = None
             print(f"Method: {method} - not supported")
+        return response
+
+    def query2(
+            self,
+            url: str,
+            params: dict = None,
+            data: dict = None,
+            method: str = "get",
+            param_names: list[str] = None,
+            data_names: list[str] = None
+    ):
+
+        if data is None:
+            data = {}
+        if data_names is not None:
+            data.update(self.load_params(*data_names))
+
+        if params is None:
+            params = {}
+        if param_names is not None:
+            params.update(self.load_params(*param_names))
+
+        print(method, url, params, data)
+
+        if method == Method.GET:
+            response = self.session.get(url, params=params, data=data)
+        elif method == Method.POST:
+            response = self.session.post(url, params=params, data=data)
+        elif method == Method.PUT:
+            response = self.session.put(url, params=params, data=data)
+        elif method == Method.PATCH:
+            response = self.session.patch(url, params=params, data=data)
+        elif method == Method.DELETE:
+            response = self.session.delete(url, params=params, data=data)
+        elif method == Method.HEAD:
+            response = self.session.head(url, params=params, data=data)
+        elif method == Method.OPTIONS:
+            response = self.session.options(url, params=params, data=data)
+        else:
+            response = None
+            print(f"Method: {method} - not supported")
+
         return response

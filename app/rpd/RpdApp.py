@@ -6,8 +6,9 @@ from docx.opc.coreprops import CoreProperties
 
 from .Comptencies import CompetenceBoard, Competence, Indicator, Level
 from .api import RpdManagerApi, RpdApi, get_now_year, Params
-from app.parser.json import open_json, save_json
-import json
+
+from app.parser import json
+
 import os
 from typing import List, Any
 from datetime import datetime
@@ -104,7 +105,7 @@ class RpdApp:
         if manager is None:
             manager = RpdManagerApi()
         if cache_dir is None:
-            cache_dir = "./.cache"
+            cache_dir = "./.cache/RPD_API"
             if not os.path.exists(cache_dir):
                 os.mkdir(cache_dir)
         self.cache_dir = cache_dir
@@ -292,7 +293,7 @@ class RpdApp:
         ds = []
         if self.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data['data']['department']['items']
                 for item in items:
@@ -305,8 +306,8 @@ class RpdApp:
             )
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']['department']['items']
                         for item in items:
@@ -350,7 +351,7 @@ class Department:
         ds = []
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data['data']['planItems']['items']
                 for item in items:
@@ -366,8 +367,8 @@ class Department:
             )
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']['planItems']['items']
                         for item in items:
@@ -435,7 +436,7 @@ class Discipline:
 
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data['data']['rup']['items']
                 for item in items:
@@ -453,8 +454,8 @@ class Discipline:
             )
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']['rup']['items']
                         for item in items:
@@ -539,7 +540,7 @@ class Plan:
 
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data['data']['rps']['items']
                 for item in items:
@@ -555,8 +556,8 @@ class Plan:
             )
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']['rps']['items']
                         for item in items:
@@ -669,7 +670,7 @@ class RP:
 
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data
                 ds = items
@@ -677,8 +678,8 @@ class RP:
             response = self.api.get_title()
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data
                         ds = items
@@ -705,7 +706,7 @@ class RP:
 
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data
                 ds = Summary(self.app, self, **items['data'])
@@ -713,8 +714,8 @@ class RP:
             response = self.api.get_summary()
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data
                         ds = Summary(self.app, self, **items['data'])
@@ -740,7 +741,7 @@ class RP:
 
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data['data']
                 ds['Контрольные вопросы и задания'] = items['field1']
@@ -752,8 +753,8 @@ class RP:
             response = self.api.get_fos()
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']
                         ds['Контрольные вопросы и задания'] = items['field1']
@@ -781,7 +782,7 @@ class RP:
 
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result'] and not response_data['data']['isEmpty']:
                 items = response_data['data']['items']
                 for item in items:
@@ -790,8 +791,8 @@ class RP:
             response = self.api.get_competencies_of_disciplines()
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result'] and not response_data['data']['isEmpty']:
                         items = response_data['data']['items']
                         for item in items:
@@ -818,7 +819,7 @@ class RP:
 
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data['data']['cards']
                 for item in items:
@@ -827,8 +828,8 @@ class RP:
             response = self.api.get_appx()
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']['cards']
                         for item in items:
@@ -853,7 +854,7 @@ class RP:
 
         if self.app.load_cache and os.path.exists(filepath):
             message = 'from cache'
-            response_data = open_json(filepath)
+            response_data = json.from_file(filepath)
             if response_data['result']:
                 items = response_data['data']['cards']
                 for item in items:
@@ -862,8 +863,8 @@ class RP:
             response = self.api.get_appx()
             try:
                 if response.status_code == 200:
-                    response_data = json.loads(response.text)
-                    save_json(response_data, filepath)
+                    response_data = json.from_str(response.text)
+                    json.to_file(response_data, filepath)
                     if response_data['result']:
                         items = response_data['data']['cards']
                         for item in items:

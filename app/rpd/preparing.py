@@ -1,20 +1,13 @@
-import json
-import os
-import time
 from datetime import datetime
-import random
 
-from typing import Callable
-
-import pandas as pd
-
-from app.parser.json import save_json, open_json
-from app.rpd.RpdApp import Department, Discipline, Plan, RP, Appx, get_now_year, Params, CompetenceBoard, Result, \
+from app.rpd import RpdApp
+from app.rpd.RpdApp import (
+    RP,
+    Appx,
+    CompetenceBoard,
+    Result,
     Summary
-from app.rpd import api, RpdApp
-
-from openpyxl import load_workbook
-from openpyxl.workbook import Workbook
+)
 
 
 def search_fos(file: Appx):

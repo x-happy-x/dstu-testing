@@ -7,8 +7,7 @@ import random
 from typing import Callable
 
 import pandas as pd
-
-from app.parser.json import save_json, open_json
+from app.parser import json
 from app.rpd.RpdApp import Department, Discipline, Plan, RP, Appx, get_now_year, Params, CompetenceBoard, Result
 from app.rpd import api, RpdApp
 
@@ -263,4 +262,4 @@ if competence_settings['Проверять']:
     competence_settings['Файл'].save(competence_settings['Сохранить'])
 wb_summary.save('ttt.xlsx')
 if check_fos:
-    save_json(REPORT, './fos_status.json')
+    json.to(REPORT, './fos_status.json')
