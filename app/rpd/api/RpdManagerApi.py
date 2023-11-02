@@ -20,11 +20,11 @@ class RpdManagerApi(BaseApi):
     rup_manager = None
 
     def initialization(self):
-        return self.session.get('https://rpd.donstu.ru/RpdManager/Initialization')
+        return self.query('https://rpd.donstu.ru/RpdManager/Initialization')
 
     def get_rup_manager(self):
         if self.rup_manager is None:
-            self.rup_manager = RupResultManagerApi(self.session, self.data)
+            self.rup_manager = RupResultManagerApi(self.session, self.data, init=self.session is not None)
         return self.rup_manager
 
     def get_departments(self, data=None):
@@ -32,9 +32,11 @@ class RpdManagerApi(BaseApi):
             data = {}
         return self.query(
             'https://rpd.donstu.ru/RpdManager/GetDepartments',
-            data,
-            Method.GET,
-            Params.year
+            params=data,
+            param_names=[
+                Params.year,
+            ],
+            method=Method.GET,
         )
 
     def get_disciplines(self, data=None):
@@ -42,12 +44,14 @@ class RpdManagerApi(BaseApi):
             data = {}
         return self.query(
             'https://rpd.donstu.ru/RpdManager/GetPlanEntities',
-            data,
-            Method.GET,
-            Params.year,
-            Params.dep_id,
-            Params.show_only_with_rp,
-            Params.hide_without_students,
+            params=data,
+            param_names=[
+                Params.year,
+                Params.dep_id,
+                Params.show_only_with_rp,
+                Params.hide_without_students,
+            ],
+            method=Method.GET,
         )
 
     def get_plans(self, data=None):
@@ -55,14 +59,16 @@ class RpdManagerApi(BaseApi):
             data = {}
         return self.query(
             'https://rpd.donstu.ru/RpdManager/GetPlanItemRups',
-            data,
-            Method.GET,
-            Params.year,
-            Params.dep_id,
-            Params.disc_name,
-            Params.show_only_with_rp,
-            Params.hide_without_students,
-            Params.object_type,
+            params=data,
+            param_names=[
+                Params.year,
+                Params.dep_id,
+                Params.disc_name,
+                Params.show_only_with_rp,
+                Params.hide_without_students,
+                Params.object_type,
+            ],
+            method=Method.GET,
         )
 
     def get_rps(self, data=None):
@@ -70,12 +76,14 @@ class RpdManagerApi(BaseApi):
             data = {}
         return self.query(
             'https://rpd.donstu.ru/RpdManager/GetRps',
-            data,
-            Method.POST,
-            Params.year,
-            Params.disc_name,
-            Params.rup_row_id,
-            Params.rup_name,
+            data=data,
+            data_names=[
+                Params.year,
+                Params.disc_name,
+                Params.rup_row_id,
+                Params.rup_name,
+            ],
+            method=Method.POST,
         )
 
     def get_summary(self, data=None):
@@ -83,10 +91,12 @@ class RpdManagerApi(BaseApi):
             data = {}
         return self.query(
             'https://rpd.donstu.ru/RpdManagmentPanel/LoadSummary',
-            data,
-            Method.POST,
-            Params.rup_row_id,
-            Params.rpd_id,
+            data=data,
+            data_names=[
+                Params.rup_row_id,
+                Params.rpd_id,
+            ],
+            method=Method.POST,
         )
 
     def get_my_rps(self, data=None):
@@ -94,7 +104,9 @@ class RpdManagerApi(BaseApi):
             data = {}
         return self.query(
             'https://rpd.donstu.ru/RpdManagmentPanel/GetRPCards',
-            data,
-            Method.GET,
-            Params.year,
+            params=data,
+            param_names=[
+                Params.year,
+            ],
+            method=Method.GET,
         )

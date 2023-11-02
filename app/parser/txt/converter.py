@@ -31,9 +31,10 @@ class HEAD:
                 key = key.strip().lower()
                 value = value[value.find("\"") + 1:-(value[::-1].find("\"") + 1)]
                 if key.startswith("b_"):
-                    value = bool(value)
+                    value = value.lower() == 'true'
                 if key.startswith("i_"):
                     value = int(value)
+
                 self.__setattr__(key, value)
             except Exception as e:
                 if len(line.strip()) > 0:

@@ -30,19 +30,14 @@ B_SORT_ANSWERS = "True" - Отсортировать ответы от прав�
 """
 
 if __name__ == "__main__":
-    # filepath = r"C:\Users\thend\Downloads\вопросы_Мат_метод_прин_реш_По_умолчанию_для_Дисциплина_20231001 (3).txt"
-    # file = ps.Gift(filepath=filepath)
-    # file.fix_names()
-    # file.save(filepath+"2")
+    txt_test_file = None
+    gift_test_file = "Z:\Downloads\гифт моделирование бизнес процессов.txt"
 
-    file = './source/Тесты/Мобильная разработка.txt'
-    TEMPLATE_FILE = "./template/LayoutTest.docx"
-    ps.txt2layout_f(
-        from_file=file,
-        to_file='./dest/ddd.docx',
-        info={
-
-        }
+    ps.to_layout(
+        txt_test_file,
+        gift_test_file,
+        html_convert=True,
+        info=ps.json.from_file('./template/layout-info.json')['info'],
     )
 
     # questions_file = r"""

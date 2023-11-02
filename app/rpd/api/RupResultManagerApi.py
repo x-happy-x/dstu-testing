@@ -10,33 +10,51 @@ class RupResultManagerApi(BaseApi):
     }
 
     def initialization(self):
-        return self.session.get('https://rpd.donstu.ru/RupResultManager/Initialize')
+        return self.query('https://rpd.donstu.ru/RupResultManager/Initialize')
 
-    def get_programs(self, **kwargs):
-        params = self.load_params(Params.year)
-        params.update(kwargs)
-        return self.session.get('https://rpd.donstu.ru/RupResultManager/GetPrograms', params=params)
-
-    def get_rup_results(self, **kwargs):
-        params = self.load_params(
-            Params.rup_id,
-            Params.direction_id,
+    def get_programs(self, data=None):
+        if data is None:
+            data = {}
+        return self.query(
+            'https://rpd.donstu.ru/RupResultManager/GetPrograms',
+            params=data,
+            param_names=[
+                Params.year
+            ]
         )
-        params.update(kwargs)
-        return self.session.get('https://rpd.donstu.ru/RupResultManager/GetRupResults', params=params)
 
-    def get_lms_results(self, **kwargs):
-        params = self.load_params(
-            Params.rup_id,
-            Params.direction_id,
+    def get_rup_results(self, data=None):
+        if data is None:
+            data = {}
+        return self.query(
+            'https://rpd.donstu.ru/RupResultManager/GetRupResults',
+            params=data,
+            param_names=[
+                Params.rup_id,
+                Params.direction_id,
+            ]
         )
-        params.update(kwargs)
-        return self.session.get('https://rpd.donstu.ru/RupResultManager/GetLmsResults', params=params)
 
-    def get_plan_item_references(self, **kwargs):
-        params = self.load_params(
-            Params.rup_id,
-            Params.direction_id,
+    def get_lms_results(self, data=None):
+        if data is None:
+            data = {}
+        return self.query(
+            'https://rpd.donstu.ru/RupResultManager/GetLmsResults',
+            params=data,
+            param_names=[
+                Params.rup_id,
+                Params.direction_id,
+            ]
         )
-        params.update(kwargs)
-        return self.session.get('https://rpd.donstu.ru/RupResultManager/GetPlanItemReferences', params=params)
+
+    def get_plan_item_references(self, data=None):
+        if data is None:
+            data = {}
+        return self.query(
+            'https://rpd.donstu.ru/RupResultManager/GetPlanItemReferences',
+            params=data,
+            param_names=[
+                Params.rup_id,
+                Params.direction_id,
+            ]
+        )

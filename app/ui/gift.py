@@ -1,6 +1,6 @@
 from app.parser import stats2df, gift2layout
 
-TEMPLATE_FILE = "./template/LayoutTest.docx"
+TEMPLATE_FILE = "./template/layout-test.docx"
 
 
 def gift_to_docx(file, filename, disp, comp, indicator, code, html_convert):

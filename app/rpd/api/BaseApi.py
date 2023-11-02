@@ -40,10 +40,10 @@ class BaseApi:
         Params.year: get_now_year(),
     }
 
-    def __init__(self, session: requests.Session = None, data: dict = None):
+    def __init__(self, session: requests.Session = None, data: dict = None, init=True):
         if data is not None:
             self.data.update(data)
-        if session is None:
+        if session is None and init:
             session = init_session()
         self.session = session
 
@@ -65,30 +65,7 @@ class BaseApi:
     def load_params(self, *names):
         return {name: self.data[name] for name in names}
 
-    def query(self, url, data, method="get", *names):
-        params = self.load_params(*names)
-        params.update(data)
-        print(method, url, params)
-        if method == Method.GET:
-            response = self.session.get(url, params=params)
-        elif method == Method.POST:
-            response = self.session.post(url, data=params)
-        elif method == Method.PUT:
-            response = self.session.put(url, data=params)
-        elif method == Method.PATCH:
-            response = self.session.patch(url, data=params)
-        elif method == Method.DELETE:
-            response = self.session.delete(url, data=params)
-        elif method == Method.HEAD:
-            response = self.session.head(url, params=params)
-        elif method == Method.OPTIONS:
-            response = self.session.options(url, params=params)
-        else:
-            response = None
-            print(f"Method: {method} - not supported")
-        return response
-
-    def query2(
+    def query(
             self,
             url: str,
             params: dict = None,
@@ -109,6 +86,9 @@ class BaseApi:
             params.update(self.load_params(*param_names))
 
         print(method, url, params, data)
+
+        if self.session is None:
+            self.session = init_session()
 
         if method == Method.GET:
             response = self.session.get(url, params=params, data=data)

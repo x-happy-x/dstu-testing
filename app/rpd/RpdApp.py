@@ -14,6 +14,8 @@ from typing import List, Any
 from datetime import datetime
 import docx
 
+from ..utils import try_parse_date
+
 MAX_LENGTH = 200
 MAX_WORDS = 10
 
@@ -59,6 +61,11 @@ prof2group = [
     },
 ]
 
+
+class QueryFailedException(Exception):
+    pass
+
+
 name_clear = lambda s: (s
                         .strip(' \r\n\t')
                         .replace("\"", "'")
@@ -101,9 +108,14 @@ class RpdApp:
     version = "0.4.3.6"
     rpd_api = None
 
-    def __init__(self, manager: RpdManagerApi = None, cache_dir: str = None, load_cache: bool = True):
+    def __init__(self,
+                 manager: RpdManagerApi = None,
+                 cache_dir: str = None,
+                 load_cache: bool = True,
+                 init_session_on_start: bool = False):
+        self.init_session_on_start = init_session_on_start
         if manager is None:
-            manager = RpdManagerApi()
+            manager = RpdManagerApi(init=init_session_on_start)
         if cache_dir is None:
             cache_dir = "./.cache/RPD_API"
             if not os.path.exists(cache_dir):
@@ -115,7 +127,7 @@ class RpdApp:
 
     def get_rpd_api(self):
         if self.rpd_api is None:
-            self.rpd_api = RpdApi(session=self.manager.session)
+            self.rpd_api = RpdApi(session=self.manager.session, init=self.init_session_on_start)
         return self.rpd_api
 
     def logging(self, *args):
@@ -691,6 +703,76 @@ class RP:
                 return Result(ds, False, str(e))
         return Result(ds, message=message)
 
+    def update_reviews(self, new_reviewers: List):
+        new_reviewers = [
+            {
+                'rank': '',
+                'position': 'генеральный директор ООО «Современные измерительные технологии»',
+                'fio': 'Померов Кирилл Николаевич',
+            },
+            {
+                'rank': '',
+                'position': 'генеральный директор ООО «IT-Компания «Союз»',
+                'fio': 'Сотниченко Дмитрий Михайлович',
+            },
+        ]
+
+        self.app.load_cache = False
+        data = self.title()
+
+        ndata = data
+        reviwers = data['data']['reviwers']
+        for i in range(max(len(reviwers), 2)):
+
+            hash = ndata['data']['commonState']['hash']
+            if i >= 2:
+                response = self.api.delete_reviewer(
+                    data={
+                        'id': reviwers[i]['id'],
+                        'hash': hash,
+                    }
+                )
+                ndata = response.json()
+
+            elif i < len(reviwers):
+                response = self.api.update_reviewer(
+                    data={
+                        'id': reviwers[i]['id'],
+                        'rank': new_reviewers[i]['rank'],
+                        'academicRank': '',
+                        'position': new_reviewers[i]['position'],
+                        'depId': '',
+                        'fio': new_reviewers[i]['fio'],
+                        'company': '',
+                        'hash': hash,
+                    }
+                )
+                ndata = response.json()
+
+            else:
+                response = self.api.add_reviewer(
+                    data={
+                        'rank': reviwers[i]['rank'],
+                        'position': reviwers[i]['position'],
+                        'fio': reviwers[i]['fio'],
+                        'hash': hash,
+                    },
+                )
+                ndata = response.json()
+
+        hash = ndata['data']['commonState']['hash']
+        response = self.api.save(
+            data={
+                'hash': hash,
+            }
+        )
+
+        self.app.load_cache = True
+        return {
+            'status': response.status_code,
+            'message': response.text
+        }
+
     def summary(self):
 
         self.api.set_dict({
@@ -903,17 +985,6 @@ class RP:
                 f"direction_oop_name:{self.direction_oop_name}, status:{self.status})")
 
 
-def try_parse_date(date):
-    d = None
-    try:
-        d = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
-    except Exception:
-        try:
-            d = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
-        except Exception:
-            d = None  # datetime.min
-    return d
-
 
 class Appx:
     id: int
@@ -960,7 +1031,7 @@ class Appx:
         if path is None:
             path = self.path
         self.app.logging("LOAD", self.name, self.link())
-        response = self.api.session.get(self.link())
+        response = self.api.query(self.link())
         if response.status_code == 200:
             with open(self.localpath(path), "wb") as f:
                 f.write(response.content)
@@ -1094,3 +1165,66 @@ class Summary:
             if any(diff_summary_b):
                 return False
         return True
+
+
+class Reviwer:
+    app: RpdApp
+    rp: RP
+
+    id: int
+    rank: str
+    academic_rank: str
+    position: str
+    dep_id: int = None
+    fio: str
+    company: str
+
+    def __init__(self, app: RpdApp, rp: RP, **kwargs):
+        self.app = app
+        self.rp = rp
+
+        self.id = kwargs.get('id')
+        self.rank = kwargs.get('rank', '')
+        self.academic_rank = kwargs.get('academicRank', '')
+        self.position = kwargs.get('position', '')
+        self.dep_id = kwargs.get('depId', '')
+        self.fio = kwargs.get('fio', '')
+        self.company = kwargs.get('company', '')
+
+    def update(self):
+        response = self.rp.api.update_reviewer(
+            data={
+                'id': self.id,
+                'rank': self.rank,
+                'academicRank': self.academic_rank,
+                'position': self.position,
+                'depId': self.dep_id,
+                'fio': self.fio,
+                'company': self.company
+            }
+        )
+        if response.status_code == 200:
+            return True
+        raise QueryFailedException(response.text)
+
+    def add(self):
+        response = self.rp.api.add_reviewer(
+            data={
+                'rank': self.rank,
+                'position': self.position,
+                'fio': self.fio,
+            }
+        )
+        if response.status_code == 200:
+            return True
+        raise QueryFailedException(response.text)
+
+    def delete(self):
+        response = self.rp.api.delete_reviewer(
+            data={
+                'id': self.id,
+            }
+        )
+        if response.status_code == 200:
+            return True
+        raise QueryFailedException(response.text)

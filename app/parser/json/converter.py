@@ -1,5 +1,6 @@
 import json
-import os.path
+import os
+from app.parser import gift
 
 
 def from_file(filepath):
@@ -51,6 +52,10 @@ def json2gift(data):
             for answer in question['answers']:
                 lines.append(tab + f"{answer_type[answer['right']]} {answer['text']}")
 
+        if question['type'].lower() in ['essay']:
+            for answer in question['answers']:
+                lines.append(tab + f"{answer_type[answer['right']]} {answer['text']}")
+
         if question['type'].lower() in ['matching']:
             for answer in question['answers']:
                 lines.append(tab + f"{answer_type[answer['right']]} {answer['text']}")
@@ -58,4 +63,4 @@ def json2gift(data):
         lines.append("}")
         lines.append("")
 
-    return "\n".join(lines)
+    return gift.from_str("\n".join(lines))

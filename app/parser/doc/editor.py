@@ -311,7 +311,11 @@ def add_multiple_question(paragraph, question, text, styles):
 
 
 def add_matching_question(document, paragraph, question, text, styles):
-    if 'установите соответствие' not in text.lower():
+    text_lower = text.lower()
+    if ('установите соответствие' not in text_lower
+            and 'установите соотношение' not in text_lower
+            and 'установить соответствие' not in text_lower
+            and 'установить соотношение' not in text_lower):
         paragraph = insert_paragraph_after(
             paragraph,
             f"{__PATTERN_FOR_NUMERATION__.replace('{i}', question.name.strip())}\tУстановите соответствие",

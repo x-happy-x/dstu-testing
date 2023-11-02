@@ -127,3 +127,15 @@ def format_sheet(ws):
             for i in range(2, 4):
                 ws.cell(row_idx, i + 1).alignment = Alignment(wrap_text=True, vertical='center')
         header_skip = False
+
+
+def try_parse_date(date):
+    d = None
+    try:
+        d = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
+    except Exception:
+        try:
+            d = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
+        except Exception:
+            d = None  # datetime.min
+    return d

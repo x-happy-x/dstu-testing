@@ -9,7 +9,7 @@ class RpdApi(BaseApi):
     }
 
     def default_query(self, url, *names, **kwargs):
-        return self.query2(
+        return self.query(
             url=f"https://rpd.donstu.ru/{url}",
             params=kwargs,
             method=kwargs.pop('method', Method.GET),
@@ -36,7 +36,7 @@ class RpdApi(BaseApi):
         :param kwargs: обязательных нет, но возможны rup_row_id, rpd_id и title_id
         :return: Response
         """
-        return self.query2(
+        return self.query(
             url='https://rpd.donstu.ru/RpdBase/GetDrafts',
             params=kwargs,
             method=Method.GET
@@ -128,7 +128,7 @@ class RpdApi(BaseApi):
         :param data: rup_row_id и rp_id - обязательные аргументы
         :return: Response
         """
-        return self.query2(
+        return self.query(
             url='https://rpd.donstu.ru/Content/GetSummary',
             data=data,
             method=Method.POST,
@@ -155,7 +155,7 @@ class RpdApi(BaseApi):
     def add_reviewer(self, data=None):
         if data is None:
             data = {}
-        return self.query2(
+        return self.query(
             f"https://rpd.donstu.ru/Title/AddReviewer",
             method=Method.POST,
             param_names=[
@@ -167,7 +167,7 @@ class RpdApi(BaseApi):
     def update_reviewer(self, data=None):
         if data is None:
             data = {}
-        return self.query2(
+        return self.query(
             f"https://rpd.donstu.ru/Title/UpdateReviewer",
             method=Method.PUT,
             param_names=[
@@ -179,7 +179,7 @@ class RpdApi(BaseApi):
     def delete_reviewer(self, data=None):
         if data is None:
             data = {}
-        return self.query2(
+        return self.query(
             f"https://rpd.donstu.ru/Title/DeleteReviewer",
             method=Method.DELETE,
             param_names=[
@@ -191,7 +191,7 @@ class RpdApi(BaseApi):
     def save(self, data=None):
         if data is None:
             data = {}
-        return self.query2(
+        return self.query(
             f"https://rpd.donstu.ru/Rp/Save",
             method=Method.POST,
             param_names=[

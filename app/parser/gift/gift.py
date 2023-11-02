@@ -164,21 +164,26 @@ class Question:
 
 
 class Gift:
-    def __init__(self, filepath=None, content=None):
+    def __init__(self, filepath: str = None, content: str = None):
         if filepath is not None:
             from .parser import parse
             with open(filepath, "r", encoding="utf-8") as f:
-                s = parse(f.read())
+                s = parse(f.read().replace('\n}\n', '\n}\n\n'))
             self.questions = s.questions
         elif content is not None:
             from .parser import parse
-            s = parse(content)
+            s = parse(content.replace('\n}\n', '\n}\n\n'))
             self.questions = s.questions
         else:
             self.questions = []
 
     def add(self, question: Question):
-        self.questions.append(question)
+        if isinstance(question, Question):
+            self.questions.append(question)
+        elif isinstance(question, list):
+            self.questions.extend(question)
+        elif isinstance(question, Gift):
+            self.questions.extend(question.questions)
 
     def find(self, name):
         name = name.lower().strip()
@@ -187,14 +192,14 @@ class Gift:
                 return question
         return None
 
-    def add_categories(self, categories):
+    def add_categories(self, categories, delimiter=','):
 
         struct = {}
         lines = txt.from_file(categories).split('\n')
 
-        headers = lines[0]
+        headers = lines[0].split(delimiter)
         for line in lines[1:]:
-            cells = line.split(',')
+            cells = line.split(delimiter)
             if cells[0] not in struct:
                 struct[cells[0]] = []
             struct[cells[0]].append({
@@ -222,6 +227,9 @@ class Gift:
     def __iadd__(self, other):
         if isinstance(other, Gift):
             self.questions.append(other.questions)
+
+    def __len__(self):
+        return len(self.questions)
 
     def __repr__(self):
         lines = []

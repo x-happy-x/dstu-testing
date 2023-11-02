@@ -6,7 +6,7 @@ import docxtpl
 from docx import Document
 
 from app.entity import *
-from app.parser import gift, Gift
+from app.parser import gift
 from app.parser.doc.editor import (
     find_paragraph_id,
     insert_paragraph_after,
@@ -29,6 +29,7 @@ from app.parser.doc.editor import (
 
     __PATTERN_FOR_NUMERATION_REGEX__,
 )
+from app.rpd.Comptencies import set_cell_border
 
 
 class Layout:
@@ -73,7 +74,7 @@ class Layout:
 
         if prefix is not None and len(prefix.strip()) > 0:
             paragraph = insert_markdown_after(paragraph, prefix, self.styles['question'])[-1]
-            paragraph = insert_paragraph_after(paragraph, "", self.styles['title'])
+            paragraph = self.add_empty_line(paragraph, 1)
 
         return paragraph
 
@@ -81,11 +82,29 @@ class Layout:
 
         if postfix is not None and len(postfix.strip()) > 0:
             paragraph = insert_markdown_after(paragraph, postfix, self.styles['question'])[-1]
-            paragraph = insert_paragraph_after(paragraph, "", self.styles['title'])
+            paragraph = self.add_empty_line(paragraph, 1)
 
         return paragraph
 
-    def get_paragraph(self, group, question):
+    def add_empty_line(self, paragraph, count=1):
+        for i in range(count):
+            paragraph = insert_paragraph_after(paragraph, "", self.styles['title'])
+        return paragraph
+
+    def add_category_prefix(self, paragraph, category_prefix=None):
+
+        if category_prefix is not None and len(category_prefix.strip()) > 0:
+            for prefix in category_prefix.split("<br>"):
+                prefix = prefix.strip()
+                if len(prefix) > 0:
+                    paragraph = insert_markdown_after(paragraph, prefix, self.styles['question'])[-1]
+                else:
+                    paragraph = self.add_empty_line(paragraph, 1)
+            paragraph = self.add_empty_line(paragraph, 2)
+
+        return paragraph
+
+    def get_paragraph(self, group, question, category_prefix=None):
 
         category = question.get_category()
         cat = category.split(" (")[0].strip()
@@ -99,15 +118,15 @@ class Layout:
                     0
                 )
                 paragraph = self.document.paragraphs[paragraph_id]
+                paragraph.style = self.styles["title"]
+                paragraph = self.add_category_prefix(paragraph, category_prefix)
                 paragraph.text = category
                 paragraph.style = self.styles["title"]
-                paragraph = insert_paragraph_after(paragraph, "", self.styles['title'])
-                self.groups[group][category] = paragraph
             else:
                 paragraph = self.groups[group][list(self.groups[group].keys())[-1]]
                 paragraph = insert_paragraph_after(paragraph, category, self.styles['title'])
-                paragraph = insert_paragraph_after(paragraph, "", self.styles['title'])
-                self.groups[group][category] = paragraph
+            paragraph = self.add_empty_line(paragraph, 1)
+            self.groups[group][category] = paragraph
             self.stats[group][cat] = 1
         else:
             paragraph = self.groups[group][category]
@@ -115,11 +134,11 @@ class Layout:
 
         return [paragraph, category, cat]
 
-    def add_multi_radio(self, group, question, prefix=None, postfix=None):
+    def add_multi_radio(self, group, question, prefix=None, postfix=None, category_prefix=None):
         if group not in self.groups:
             return
 
-        paragraph, category, cat = self.get_paragraph(group, question)
+        paragraph, category, cat = self.get_paragraph(group, question, category_prefix)
         paragraph = self.add_prefix(paragraph, question, prefix)
 
         text = question.get_text()
@@ -138,14 +157,14 @@ class Layout:
 
         return paragraph
 
-    def add_multi_choice(self, group, question, prefix=None, postfix=None):
-        return self.add_multi_radio(group, question, prefix, postfix)
+    def add_multi_choice(self, group, question, prefix=None, postfix=None, category_prefix=None):
+        return self.add_multi_radio(group, question, prefix, postfix, category_prefix)
 
-    def add_short(self, group, question, prefix=None, postfix=None):
+    def add_short(self, group, question, prefix=None, postfix=None, category_prefix=None):
         if group not in self.groups:
             return
 
-        paragraph, category, cat = self.get_paragraph(group, question)
+        paragraph, category, cat = self.get_paragraph(group, question, category_prefix)
         paragraph = self.add_prefix(paragraph, question, prefix)
 
         text = question.get_text()
@@ -164,11 +183,11 @@ class Layout:
 
         return paragraph
 
-    def add_matching(self, group, question, prefix=None, postfix=None):
+    def add_matching(self, group, question, prefix=None, postfix=None, category_prefix=None):
         if group not in self.groups:
             return
 
-        paragraph, category, cat = self.get_paragraph(group, question)
+        paragraph, category, cat = self.get_paragraph(group, question, category_prefix)
         paragraph = self.add_prefix(paragraph, question, prefix)
 
         text = question.get_text()
@@ -188,8 +207,8 @@ class Layout:
 
         return paragraph
 
-    def add(self, group, question, prefix=None, postfix=None):
-        self.add_quest_func[question.get_type()](group, question, prefix, postfix)
+    def add(self, group, question, prefix=None, postfix=None, category_prefix=None):
+        self.add_quest_func[question.get_type()](group, question, prefix, postfix, category_prefix)
 
     def find(self, name):
         name = name.lower().strip()
@@ -213,7 +232,18 @@ class Layout:
         for row in key_table.rows[1:]:
             row._element.getparent().remove(row._element)
 
-        first_column = len(questions_sorted) // 2
+        first_column = (len(questions_sorted) + 1) // 2
+        border = {"sz": 1, "val": "single", "color": "#000000"}
+        for i in range(5):
+            if i == 2:
+                continue
+            set_cell_border(
+                key_table.rows[0].cells[i],
+                top=border,
+                start=border,
+                bottom=border,
+                end=border
+            )
 
         for i in range(len(questions_sorted)):
             if i < first_column:
@@ -222,6 +252,15 @@ class Layout:
             else:
                 row = key_table.rows[1 + (i % first_column)]
                 start_column = 3
+
+            for k in range(2):
+                set_cell_border(
+                    row.cells[start_column + k],
+                    top=border,
+                    start=border,
+                    bottom=border,
+                    end=border
+                )
 
             row.cells[start_column].text = f"{i + 1}"
             for p in row.cells[start_column].paragraphs:
@@ -302,10 +341,14 @@ class Layout:
         if not to_file.endswith(".docx") and not to_file.endswith(".doc"):
             to_file += ".docx"
         to_file = to_file.replace("\n", " ")
-        template.save(to_file)
+
         os.remove(temp_file)
 
         self.path = to_file
+        dest = os.path.split(self.path)[0]
+        if len(dest) > 0 and not os.path.exists(dest):
+            os.makedirs(dest)
+
         template.save(self.path)
 
         return self.path
@@ -317,7 +360,7 @@ class LayoutStruct:
     struct: list[dict] = None
     add_question: dict
 
-    def __init__(self, struct=None):
+    def __init__(self, struct=None, delimiter='|'):
         self.questions = {}
         self.groups = []
         self.skipped = []
@@ -325,9 +368,9 @@ class LayoutStruct:
             self.struct = []
             with open(struct, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
-                headers = lines[0].split(',')
+                headers = lines[0].split(delimiter)
                 for line in lines[1:]:
-                    values = line.split(',')
+                    values = line.split(delimiter)
                     self.struct.append(
                         {headers[i].strip().lower(): values[i].strip() for i in range(min(len(values), len(headers)))})
 
@@ -370,7 +413,7 @@ class LayoutStruct:
             for i in range(len(struct['questions'])):
                 prefix = struct['prefix'] if i == 0 else None
                 postfix = struct['postfix'] if i == len(struct['questions']) - 1 else None
-                layout.add(struct['group'], struct['questions'][i], prefix, postfix)
+                layout.add(struct['group'], struct['questions'][i], prefix, postfix, struct['category_prefix'])
         return layout
 
     def build(self, template, path):
@@ -392,13 +435,13 @@ def gift2layout(
     if info is None:
         info = {}
     if template_file is None:
-        template_file = "./template/LayoutTest.docx"
+        template_file = "./template/layout-test.docx"
     if categories_file is None:
-        categories_file = "./template/categories.csv"
+        categories_file = "./template/layout-categories.csv"
     if struct_file is None:
-        struct_file = "./template/struct.csv"
+        struct_file = "./template/layout-struct.csv"
 
-    if isinstance(questions_file, Gift):
+    if isinstance(questions_file, gift.Gift):
         questions = questions_file
     else:
         questions = gift.from_file(filepath=questions_file)

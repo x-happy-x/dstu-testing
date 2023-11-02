@@ -172,3 +172,73 @@ def fp_search_fos(app: RpdApp, rpd: RP, result: Result):
     else:
         app.logging('При обработке приложения в поисках ФОСа возникла ошибка:', result.message)
     return report
+
+def rp_update_reviews(app: RpdApp, rp: RP):
+    new_reviewers = [
+        {
+            'rank': '',
+            'position': 'генеральный директор ООО «Современные измерительные технологии»',
+            'fio': 'Померов Кирилл Николаевич',
+        },
+        {
+            'rank': '',
+            'position': 'генеральный директор ООО «IT-Компания «Союз»',
+            'fio': 'Сотниченко Дмитрий Михайлович',
+        },
+    ]
+
+    app.load_cache = False
+    data = rp.title()
+
+    ndata = data
+    reviwers = data['data']['reviwers']
+    for i in range(max(len(reviwers), 2)):
+
+        hash = ndata['data']['commonState']['hash']
+        if i >= 2:
+            response = rp.api.delete_reviewer(
+                data={
+                    'id': reviwers[i]['id'],
+                    'hash': hash,
+                }
+            )
+            ndata = response.json()
+
+        elif i < len(reviwers):
+            response = rp.api.update_reviewer(
+                data={
+                    'id': reviwers[i]['id'],
+                    'rank': new_reviewers[i]['rank'],
+                    'academicRank': '',
+                    'position': new_reviewers[i]['position'],
+                    'depId': '',
+                    'fio': new_reviewers[i]['fio'],
+                    'company': '',
+                    'hash': hash,
+                }
+            )
+            ndata = response.json()
+
+        else:
+            response = rp.api.add_reviewer(
+                data={
+                    'rank': reviwers[i]['rank'],
+                    'position': reviwers[i]['position'],
+                    'fio': reviwers[i]['fio'],
+                    'hash': hash,
+                },
+            )
+            ndata = response.json()
+
+    hash = ndata['data']['commonState']['hash']
+    response = rp.api.save(
+        data={
+            'hash': hash,
+        }
+    )
+
+    app.load_cache = True
+    return {
+        'status': response.status_code,
+        'message': response.text
+    }

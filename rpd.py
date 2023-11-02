@@ -9,7 +9,7 @@ def department_selector(d: Department) -> bool:
 
 
 def discipline_selector(d: Discipline) -> bool:
-    return d.name == 'Технологическая (проектно-технологическая) практика'
+    return True
 
 
 def plan_selector(plan: Plan) -> bool:
@@ -17,12 +17,12 @@ def plan_selector(plan: Plan) -> bool:
               '090403МПИ_']
     for group in groups:
         if group in plan.rup_name:
-            return plan.rup_row_id == 3019703
+            return True
     return False
 
 
 def rpd_selector(rp: RP) -> bool:
-    return rp.id == 741084 and rp.rup_row_id == 3019703
+    return True
 
 
 rpd_app = RpdApp()
@@ -43,76 +43,84 @@ rpd_app.load_cache = True
 # )
 #
 # # Сохранение отчета
-# json.to_file(report, 'report.json')
+# json.to_file(report, './source/reports.json')
 
-def update_reviews(app: RpdApp, rp: RP):
-    new_reviewers = [
-        {
-            'rank': '',
-            'position': 'генеральный директор ООО «Современные измерительные технологии»',
-            'fio': 'Померов Кирилл Николаевич',
-        },
-        {
-            'rank': '',
-            'position': 'генеральный директор ООО «IT-Компания «Союз»',
-            'fio': 'Сотниченко Дмитрий Михайлович',
-        },
-    ]
+# def update_reviews(app: RpdApp, rp: RP):
+#     new_reviewers = [
+#         {
+#             'rank': '',
+#             'position': 'генеральный директор ООО «Современные измерительные технологии»',
+#             'fio': 'Померов Кирилл Николаевич',
+#         },
+#         {
+#             'rank': '',
+#             'position': 'генеральный директор ООО «IT-Компания «Союз»',
+#             'fio': 'Сотниченко Дмитрий Михайлович',
+#         },
+#     ]
+#
+#     app.load_cache = False
+#     data = rp.title()
+#
+#     ndata = data
+#     reviwers = data['data']['reviwers']
+#     for i in range(max(len(reviwers), 2)):
+#
+#         hash = ndata['data']['commonState']['hash']
+#         if i >= 2:
+#             response = rp.api.delete_reviewer(
+#                 data={
+#                     'id': reviwers[i]['id'],
+#                     'hash': hash,
+#                 }
+#             )
+#             ndata = response.json()
+#
+#         elif i < len(reviwers):
+#             response = rp.api.update_reviewer(
+#                 data={
+#                     'id': reviwers[i]['id'],
+#                     'rank': new_reviewers[i]['rank'],
+#                     'academicRank': '',
+#                     'position': new_reviewers[i]['position'],
+#                     'depId': '',
+#                     'fio': new_reviewers[i]['fio'],
+#                     'company': '',
+#                     'hash': hash,
+#                 }
+#             )
+#             ndata = response.json()
+#
+#         else:
+#             response = rp.api.add_reviewer(
+#                 data={
+#                     'rank': reviwers[i]['rank'],
+#                     'position': reviwers[i]['position'],
+#                     'fio': reviwers[i]['fio'],
+#                     'hash': hash,
+#                 },
+#             )
+#             ndata = response.json()
+#
+#     hash = ndata['data']['commonState']['hash']
+#     response = rp.api.save(
+#         data={
+#             'hash': hash,
+#         }
+#     )
+#
+#     app.load_cache = True
+#     return {
+#         'status': response.status_code,
+#         'message': response.text
+#     }
 
-    app.load_cache = False
-    data = rp.title()
-
-    ndata = data
-    reviwers = data['data']['reviwers']
-    for i in range(max(len(reviwers), 2)):
-
-        hash = ndata['data']['commonState']['hash']
-        if i >= 2:
-            response = rp.api.delete_reviewer(
-                data={
-                    'id': reviwers[i]['id'],
-                    'hash': hash,
-                }
-            )
-            ndata = response.json()
-
-        elif i < len(reviwers):
-            response = rp.api.update_reviewer(
-                data={
-                    'id': reviwers[i]['id'],
-                    'rank': new_reviewers[i]['rank'],
-                    'academicRank': '',
-                    'position': new_reviewers[i]['position'],
-                    'depId': '',
-                    'fio': new_reviewers[i]['fio'],
-                    'company': '',
-                    'hash': hash,
-                }
-            )
-            ndata = response.json()
-
-        else:
-            response = rp.api.add_reviewer(
-                data={
-                    'rank': reviwers[i]['rank'],
-                    'position': reviwers[i]['position'],
-                    'fio': reviwers[i]['fio'],
-                    'hash': hash,
-                },
-            )
-            ndata = response.json()
-
-    hash = ndata['data']['commonState']['hash']
-    response = rp.api.save(
-        data={
-            'hash': hash,
-        }
-    )
-
-    app.load_cache = True
+def rpd_info(app: RpdApp, rp: RP):
     return {
-        'status': response.status_code,
-        'message': response.text
+        'name': rp.name,
+        'user': rp.user,
+        'owner': rp.owner,
+        'modified': rp.modified_on
     }
 
 
@@ -123,7 +131,7 @@ report = rpd_app.walk(
     plan_selector=plan_selector,
     rpd_selector=rpd_selector,
     # Обработчики
-    rpd_prepare=[update_reviews],
+    rpd_prepare=[rpd_info],
 )
 
-print(report)
+json.to_file(report, './dest/rp_report.json')
