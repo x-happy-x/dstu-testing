@@ -1,34 +1,34 @@
 # DSTU - Testing
 
-### Главные файлы:
-`rpd.py` - работа с РПД
+### Р“Р»Р°РІРЅС‹Рµ С„Р°Р№Р»С‹:
+`rpd.py` - СЂР°Р±РѕС‚Р° СЃ Р РџР”
 
-`plan.py` - оформление плана
+`plan.py` - РѕС„РѕСЂРјР»РµРЅРёРµ РїР»Р°РЅР°
 
-`layout.py` - создание макетов
+`layout.py` - СЃРѕР·РґР°РЅРёРµ РјР°РєРµС‚РѕРІ
 
-### Главные папки:
+### Р“Р»Р°РІРЅС‹Рµ РїР°РїРєРё:
 
-`.cache` - Папка с кэшем
+`.cache` - РџР°РїРєР° СЃ РєСЌС€РµРј
 
-* `RPD_API` - кэш из менеджера РПД
-* `LAYOUT_BUILDER` - кэш при создании макета (не нужен после выполнения программы)
+* `RPD_API` - РєСЌС€ РёР· РјРµРЅРµРґР¶РµСЂР° Р РџР”
+* `LAYOUT_BUILDER` - РєСЌС€ РїСЂРё СЃРѕР·РґР°РЅРёРё РјР°РєРµС‚Р° (РЅРµ РЅСѓР¶РµРЅ РїРѕСЃР»Рµ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРѕРіСЂР°РјРјС‹)
 
-`.moodle` - всё для запуска moodle в docker
+`.moodle` - РІСЃС‘ РґР»СЏ Р·Р°РїСѓСЃРєР° moodle РІ docker
 
-`.session` - Папка с данными для сессии (куки)
+`.session` - РџР°РїРєР° СЃ РґР°РЅРЅС‹РјРё РґР»СЏ СЃРµСЃСЃРёРё (РєСѓРєРё)
 
-`app` - весь код
+`app` - РІРµСЃСЊ РєРѕРґ
 
-`dest` - Сгенерированные файлы
+`dest` - РЎРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅС‹Рµ С„Р°Р№Р»С‹
 
-`source` - Исходные файлы
+`source` - РСЃС…РѕРґРЅС‹Рµ С„Р°Р№Р»С‹
 
-`template` - Шаблоны для оформления документов
+`template` - РЁР°Р±Р»РѕРЅС‹ РґР»СЏ РѕС„РѕСЂРјР»РµРЅРёСЏ РґРѕРєСѓРјРµРЅС‚РѕРІ
 
-### Примеры использование
+### РџСЂРёРјРµСЂС‹ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ
 
-#### Выгрузка данных РПД:
+#### Р’С‹РіСЂСѓР·РєР° РґР°РЅРЅС‹С… Р РџР”:
 
 ```python
 from app.parser import json
@@ -46,8 +46,8 @@ def discipline_selector(d: Discipline) -> bool:
 
 
 def plan_selector(plan: Plan) -> bool:
-    groups = ['B090302_', 'B090302ВИАС_', 'B090302ВИС_', 'B090303ВЗПИ_', 'B090303ВОЗПИ_', '090402МЗИН_', '090402МИН_',
-              '090403МПИ_']
+    groups = ['B090302_', 'B090302Р’РРђРЎ_', 'B090302Р’РРЎ_', 'B090303Р’Р—РџР_', 'B090303Р’РћР—РџР_', '090402РњР—РРќ_', '090402РњРРќ_',
+              '090403РњРџР_']
     for group in groups:
         if group in plan.rup_name:
             return True
@@ -63,45 +63,45 @@ rpd_app.load_cache = True
 
 
 report = rpd_app.walk(
-    # Фильтры
+    # Р¤РёР»СЊС‚СЂС‹
     department_selector=department_selector,
     discipline_selector=discipline_selector,
     plan_selector=plan_selector,
     rpd_selector=rpd_selector,
-    # Обработчики
+    # РћР±СЂР°Р±РѕС‚С‡РёРєРё
     files_prepare=[fp_search_fos, fp_search_files],
     fos_prepare=[fp_search_skif_test],
     summary_prepare=[fp_search_summary],
     competencies_prepare=[fp_search_competencies]
 )
 
-# Сохранение отчета
+# РЎРѕС…СЂР°РЅРµРЅРёРµ РѕС‚С‡РµС‚Р°
 json.to_file(report, './source/reports.json')
 ```
 
-#### Преобразование gift в карту тестовых заданий:
+#### РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ gift РІ РєР°СЂС‚Сѓ С‚РµСЃС‚РѕРІС‹С… Р·Р°РґР°РЅРёР№:
 
 ```python
 from app import parser as ps
 
 txt_test_file = None
-gift_test_file = "**путь к gift-файлу**"
+gift_test_file = "**РїСѓС‚СЊ Рє gift-С„Р°Р№Р»Сѓ**"
 
 ps.to_layout(
     txt_test_file,
     gift_test_file,
     html_convert=True,
     info=ps.json.from_file('./template/layout-info.json')['info'], 
-    # Изменить в ./template/layout-info.json дисциплину, направление и т.д.
+    # РР·РјРµРЅРёС‚СЊ РІ ./template/layout-info.json РґРёСЃС†РёРїР»РёРЅСѓ, РЅР°РїСЂР°РІР»РµРЅРёРµ Рё С‚.Рґ.
 )
 ```
 
-#### Преобразование txt в карту тестовых заданий:
+#### РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ txt РІ РєР°СЂС‚Сѓ С‚РµСЃС‚РѕРІС‹С… Р·Р°РґР°РЅРёР№:
 
 ```python
 from app import parser as ps
 
-txt_test_file = "**путь к txt-файлу**"
+txt_test_file = "**РїСѓС‚СЊ Рє txt-С„Р°Р№Р»Сѓ**"
 gift_test_file = None
 
 ps.to_layout(
@@ -109,35 +109,35 @@ ps.to_layout(
     gift_test_file,
     html_convert=True,
     info=ps.json.from_file('./template/layout-info.json')['info'], 
-    # Изменить в ./template/layout-info.json дисциплину, направление и т.д.
+    # РР·РјРµРЅРёС‚СЊ РІ ./template/layout-info.json РґРёСЃС†РёРїР»РёРЅСѓ, РЅР°РїСЂР°РІР»РµРЅРёРµ Рё С‚.Рґ.
 )
 ```
 
-#### Преобразование txt + gift в карту тестовых заданий:
+#### РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ txt + gift РІ РєР°СЂС‚Сѓ С‚РµСЃС‚РѕРІС‹С… Р·Р°РґР°РЅРёР№:
 
 ```python
 from app import parser as ps
 
-txt_test_file = "**путь к txt-файлу**"
-gift_test_file = "**путь к gift-файлу**"
+txt_test_file = "**РїСѓС‚СЊ Рє txt-С„Р°Р№Р»Сѓ**"
+gift_test_file = "**РїСѓС‚СЊ Рє gift-С„Р°Р№Р»Сѓ**"
 
 ps.to_layout(
     txt_test_file,
     gift_test_file,
     html_convert=True,
     info=ps.json.from_file('./template/layout-info.json')['info'], 
-    # Изменить в ./template/layout-info.json дисциплину, направление и т.д.
+    # РР·РјРµРЅРёС‚СЊ РІ ./template/layout-info.json РґРёСЃС†РёРїР»РёРЅСѓ, РЅР°РїСЂР°РІР»РµРЅРёРµ Рё С‚.Рґ.
 )
 ```
 
-#### Генерация таблиц плана:
+#### Р“РµРЅРµСЂР°С†РёСЏ С‚Р°Р±Р»РёС† РїР»Р°РЅР°:
 
 ```python
 from app.parser import json
 from app import parser
 
-# plans = parser.plan2json('./УП', 'План', [2, 0], save='./plan.json')
-# preps = parser.preps2json("./Учет.xlsx", "Учет", [2, 0], './preps.json')
+# plans = parser.plan2json('./РЈРџ', 'РџР»Р°РЅ', [2, 0], save='./plan.json')
+# preps = parser.preps2json("./РЈС‡РµС‚.xlsx", "РЈС‡РµС‚", [2, 0], './preps.json')
 
 plans = json.from_file('./source/plan.json')
 preps = json.from_file('./source/preps.json')
@@ -150,6 +150,6 @@ parser.plan2excel(
     departments['data']['department']['items'],
     fos_status,
     9,
-    "./dest/Карта учета ОМ и тестов.xlsx"
+    "./dest/РљР°СЂС‚Р° СѓС‡РµС‚Р° РћРњ Рё С‚РµСЃС‚РѕРІ.xlsx"
 )
 ```

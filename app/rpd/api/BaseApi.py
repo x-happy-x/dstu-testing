@@ -78,12 +78,16 @@ class BaseApi:
         if data is None:
             data = {}
         if data_names is not None:
-            data.update(self.load_params(*data_names))
+            data_ = self.load_params(*data_names)
+            data_.update(data)
+            data = data_
 
         if params is None:
             params = {}
         if param_names is not None:
-            params.update(self.load_params(*param_names))
+            params_ = self.load_params(*param_names)
+            params_.update(params)
+            params = params_
 
         print(method, url, params, data)
 

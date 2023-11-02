@@ -392,7 +392,7 @@ class Department:
         return Result(ds, message=message)
 
     def get_file_path(self, filename, replace=False):
-        sn = name_clear(self.name)
+        sn = name_clear(f"{self.id} {self.name}")
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
@@ -454,6 +454,7 @@ class Discipline:
                 for item in items:
                     ds.append(Plan(self.app, self, current_dir, **item))
         else:
+            print(self)
             response = self.manager.get_plans(
                 {
                     Params.year: self.department.year,
@@ -479,11 +480,11 @@ class Discipline:
         return Result(ds, message=message)
 
     def get_file_path(self, filename, replace=False):
-        sn = name_clear(self.name)
+        sn = name_clear(f"{self.num} {self.name} {self.object_type}")
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
-            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1])
+            sn = " ".join(sn.split(" ", MAX_WORDS)[:MAX_WORDS - 1]) + f" {self.object_type}"
         current_dir = os.path.join(self.path, sn)
         if not os.path.exists(current_dir):
             os.makedirs(current_dir)
@@ -581,7 +582,7 @@ class Plan:
         return Result(ds, message=message)
 
     def get_file_path(self, filename, replace=False):
-        sn = name_clear(self.rup_name)
+        sn = name_clear(f"{self.rup_id} {self.rup_row_id} {self.rup_name}")
         s1 = None
         if len(sn) > MAX_LENGTH:
             s1 = sn
@@ -983,7 +984,6 @@ class RP:
                 f"has_draft:{self.has_draft}, is_draft_currupted:{self.is_draft_currupted}, "
                 f"direction_oop_id:{self.direction_oop_id}, direction_oop_code:{self.direction_oop_code}, "
                 f"direction_oop_name:{self.direction_oop_name}, status:{self.status})")
-
 
 
 class Appx:
