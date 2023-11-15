@@ -10,7 +10,7 @@ from .txt.converter import txt2json
 
 from .json.converter import json2gift
 from .doc.layout import gift2layout
-from .plan.parser import plan2json, plan2excel, preps2json
+from .plan.parser import plan2stat, plan2json, plan2excel, preps2json
 
 
 def txt2json_f(filepath, save=None):

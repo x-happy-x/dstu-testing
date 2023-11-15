@@ -70,7 +70,7 @@ class BaseApi:
             url: str,
             params: dict = None,
             data: dict = None,
-            method: str = "get",
+            method: str = "GET",
             param_names: list[str] = None,
             data_names: list[str] = None
     ):

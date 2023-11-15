@@ -46,7 +46,7 @@ def fp_search_files(app: RpdApp, rpd: RP, result: Result, save=False, reload=Fal
         for file in result.data:
             file: Appx
             modified = 'None'
-            if file.modified is None or save:
+            if file.modified is None and save:
                 if reload or not file.exists():
                     file.save()
                 try:
@@ -173,6 +173,7 @@ def fp_search_fos(app: RpdApp, rpd: RP, result: Result):
         app.logging('При обработке приложения в поисках ФОСа возникла ошибка:', result.message)
     return report
 
+
 def rp_update_reviews(app: RpdApp, rp: RP):
     new_reviewers = [
         {
@@ -222,9 +223,9 @@ def rp_update_reviews(app: RpdApp, rp: RP):
         else:
             response = rp.api.add_reviewer(
                 data={
-                    'rank': reviwers[i]['rank'],
-                    'position': reviwers[i]['position'],
-                    'fio': reviwers[i]['fio'],
+                    'rank': new_reviewers[i]['rank'],
+                    'position': new_reviewers[i]['position'],
+                    'fio': new_reviewers[i]['fio'],
                     'hash': hash,
                 },
             )
@@ -241,4 +242,13 @@ def rp_update_reviews(app: RpdApp, rp: RP):
     return {
         'status': response.status_code,
         'message': response.text
+    }
+
+
+def rpd_info(app: RpdApp, rp: RP):
+    return {
+        'name': rp.name,
+        'user': rp.user,
+        'owner': rp.owner,
+        'modified': rp.modified_on
     }

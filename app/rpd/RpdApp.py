@@ -73,6 +73,7 @@ name_clear = lambda s: (s
                         .replace('\\', '/')
                         .replace(':', '-')
                         .replace('?', '!')
+                        .replace('\n', ' ')
                         .replace('\r', ''))
 
 
@@ -124,6 +125,7 @@ class RpdApp:
         self.load_cache = load_cache
         self.manager = manager
         self.logging_level = 0
+        self.log = ""
 
     def get_rpd_api(self):
         if self.rpd_api is None:
@@ -131,7 +133,12 @@ class RpdApp:
         return self.rpd_api
 
     def logging(self, *args):
+        self.log += "\t" * self.logging_level + " ".join(map(str, args)) + "\n"
         print("\t" * self.logging_level, *args)
+
+    def save_log(self):
+        with open('./.logs/rpd.log', 'w') as f:
+            f.write(self.log)
 
     def walk(self,
              years=None,
@@ -287,9 +294,21 @@ class RpdApp:
                                     REPORT_RPD['РПД'] = rpd_prepare(self, rpd)
 
                             REPORT_PLAN[rpd.id] = REPORT_RPD
-                        REPORT_DISCIPLINE[plan.rup_name] = REPORT_PLAN
-                    REPORT_DEPARTMENT[discipline.name] = REPORT_DISCIPLINE
-                REPORT_YEAR[department.name] = REPORT_DEPARTMENT
+                        # REPORT_DISCIPLINE[plan.rup_name] = REPORT_PLAN
+                        REPORT_DISCIPLINE[f"{plan.rup_id} {plan.rup_row_id}"] = {
+                            'name': plan.rup_name,
+                            'items': REPORT_PLAN
+                        }
+                    # REPORT_DEPARTMENT[discipline.name] = REPORT_DISCIPLINE
+                    REPORT_DEPARTMENT[f"{discipline.num} {discipline.name}"] = {
+                        'name': discipline.name,
+                        'items': REPORT_DISCIPLINE
+                    }
+                # REPORT_YEAR[department.name] = REPORT_DEPARTMENT
+                REPORT_YEAR[department.id] = {
+                    'name': department.name,
+                    'items': REPORT_DEPARTMENT
+                }
             REPORT[year] = REPORT_YEAR
         return REPORT
 

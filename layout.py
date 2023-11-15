@@ -30,8 +30,8 @@ B_SORT_ANSWERS = "True" - Отсортировать ответы от прав�
 """
 
 if __name__ == "__main__":
-    txt_test_file = None
-    gift_test_file = "Z:\Downloads\гифт моделирование бизнес процессов.txt"
+    txt_test_file = './source/Тесты/Мобильная разработка.txt'
+    gift_test_file = "Z:/Downloads/Telegram Desktop/вопросы-ПИТ-top-20231102-1511.txt"
 
     ps.to_layout(
         txt_test_file,

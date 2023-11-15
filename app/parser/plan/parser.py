@@ -11,6 +11,14 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from app.parser import json
 
+ALL = 'Всё'
+ALL_DONE = 'Готово всё'
+ALL_FOS = 'Готовы ФОСы'
+ALL_TEST = 'Готовы тесты'
+ALL_FOS_OR_TEST = 'Готово только ФОСы или тесты'
+ANYTHING = 'Готово хоть-нибудь'
+NOTHING = 'Нет ничего'
+
 
 def plan2json(path, sheet, skip=None, save=None, pattern=r'[А-Я]+'):
     if skip is None:
@@ -77,7 +85,7 @@ __parse_data = {
 
 def parse_name(filename):
     year = int('20' + filename.split('.')[0][::-1].split('-')[0][::-1])
-    kurs = int(filename.split('_')[-1].split('-')[0])
+    course = int(filename.split('_')[-1].split('-')[0])
 
     name = filename.split('_')[0]
     for ptr in __parse_data:
@@ -85,7 +93,7 @@ def parse_name(filename):
         if match:
             name = __parse_data[ptr]
 
-    return name, year, kurs
+    return name, year, course
 
 
 def preps2json(file, sheet, skip=None, save=None):
@@ -158,9 +166,9 @@ def get_departament_name(departments, code):
     return list(filter(lambda x: x['number'] == code, departments))[0]['name']
 
 
-def plan2excel(plans, preps, departments, fos_status, kaf, save=None):
+def plan2excel(plans, preps, departments, reports, kaf, save=None):
     if save is None:
-        save = "plan"
+        save = "plan.xlsx"
     wb = load_workbook('./template/LayoutPlan.xlsx')
     wb: Workbook
     # writer = pd.ExcelWriter(f'{save}.xlsx', engine='xlsxwriter')
@@ -181,81 +189,106 @@ def plan2excel(plans, preps, departments, fos_status, kaf, save=None):
         'Тип контроля',
         'Файлы'
     ]
-    for plan_name in plans:
-        for year in plans[plan_name]:
-            for kurs in plans[plan_name][year]:
-                plan = plans[plan_name][year][kurs]
-                plan = plan[list(plan.keys())[0]]
+    for p_group in plans:
+        for p_year in plans[p_group]:
+            for p_course in plans[p_group][p_year]:
 
                 i = 1
                 map_subjs = []
-                for subj in plan:
-                    kaf_name = get_departament_name(departments, plan[subj]['Кафедра'])
-                    # kaf == plan[subj]['Кафедра']:
-                    ssubj = plan[subj]['R'] if 'R' in plan[subj] else subj
 
-                    _year = f"{year}-{int(year) + 1}"
-                    if _year not in fos_status:
-                        print(f"Год: {_year} не найден в report")
-                        continue
+                for p_filename in plans[p_group][p_year][p_course]:
+                    plan = plans[p_group][p_year][p_course][p_filename]
 
-                    __fs_year = fos_status[_year]
-                    if kaf_name not in __fs_year:
-                        print(f"Кафедра: {kaf_name} не найден в report[{_year}]")
-                        continue
+                    for subject in plan:
+                        # if kaf != plan[subject]['Кафедра']:
+                        #     continue
+                        academic_year = f"{p_year}-{int(p_year) + 1}"
+                        p_kaf_name = get_departament_name(departments, plan[subject]['Кафедра'])
+                        real_subject = plan[subject]['R'] if 'R' in plan[subject] else subject
 
-                    __fs_kaf = __fs_year[kaf_name]
-                    if ssubj not in __fs_kaf:
-                        print(f"Предмет: {ssubj} не найден в report[{_year}][{kaf_name}]")
-                        continue
-
-                    fs = __fs_kaf[ssubj]
-                    fos = None
-                    skif = None
-                    url = None
-                    skif_url = None
-                    files = []
-                    comps = None
-                    summary = None
-                    control = None
-                    for fs_plan in fs:
-                        pd_ = parse_name(fs_plan)
-                        for rpd in fs[fs_plan]:
-                            report = fs[fs_plan][rpd]
-                            if report['group']['name'] == plan_name and str(pd_[1]) == year and str(pd_[2]) == kurs:
-                                if url is None:
-                                    url = ''
-                                url += report['url'] + '\n'
-                                if skif_url is None:
-                                    skif_url = ''
-                                skif_url += str(report['ФОС'][0]['url']) + '\n'
-                                if skif is None:
-                                    skif = ''
-                                skif += pm[report['ФОС'][0]['exist']] + '\n'
-                                if comps is None:
-                                    comps = ''
-                                comps += report['Компетенции'][0] + '\n'
-                                if summary is None:
-                                    summary = ''
-                                summary += pm[report['Часы'][0]['Правильность часов:']] + '\n'
-                                if control is None:
-                                    control = ''
-                                for sr in report['Часы'][0]['Контроль:']:
-                                    control += f"{sr['Тип контроля']} ({sr['Семестр']} сем.)\n"
-                                if fos is None:
-                                    fos = ''
-                                fos += pm[report['Приложение'][0]['new']] + '\n'
-                                files.extend(report['Приложение'][1]['files'])
-
-                    map_subjs.append([
-                        i, subj, get_prep(preps, ssubj, plan_name),
-                        None, str(fos).strip(), str(skif).strip(), str(skif).strip(), kaf_name.strip(),
-                        str(url).strip(), str(skif_url).strip(), str(comps).strip(), str(summary).strip(),
-                        str(control).strip(), files
-                    ])
-                    i += 1
-
-                sheet_name = f"{plan_name} ({kurs}-{str(year)[2:]})"
+                        if academic_year not in reports:
+                            print(f"Год: {academic_year} не найден в report")
+                            continue
+                        # Выбор по году
+                        reports_year = reports[academic_year]
+                        _kafs = _filter(reports_year, lambda r: r['name'] == p_kaf_name)
+                        if len(_kafs) == 0:
+                            print(f"Кафедра: {p_kaf_name} не найден в report[{academic_year}]")
+                            continue
+                        # Выбор по кафедре
+                        for _kaf_id, reports_kaf in _kafs:
+                            subject_name_clear = lambda x: x.replace(',', '').replace(' ', '')
+                            rs = subject_name_clear(real_subject)
+                            _subjects = _filter(
+                                reports_kaf['items'],
+                                lambda r: subject_name_clear(r['name']) == rs
+                            )
+                            if len(_subjects) == 0:
+                                print(f"Дисциплина: {real_subject} "
+                                      f"не найдена в report[{academic_year}][{_kaf_id} | {reports_kaf['name']}]")
+                                continue
+                            # Выбор по дисциплине
+                            for _subject_id, reports_subject in _subjects:
+                                _plans = _filter(reports_subject['items'])
+                                if len(_plans) == 0:
+                                    print(f"План не найден в "
+                                          f"report[{academic_year}][{_kaf_id} | {reports_kaf['name']}][{_subject_id}]")
+                                    continue
+                                fos = None
+                                skif = None
+                                url = None
+                                skif_url = None
+                                files = []
+                                comps = None
+                                summary = None
+                                control = None
+                                # Планы
+                                for _plan_id, reports_plan in _plans:
+                                    _rpd = _filter(
+                                        reports_plan['items'],
+                                        lambda r: r['group']['name'] == p_group
+                                    )
+                                    if len(_plans) == 0:
+                                        print(f"РПД не найдено в "
+                                              f"report[{academic_year}][{_kaf_id} | {reports_kaf['name']}]"
+                                              f"[{_subject_id}][{_plan_id} | {reports_plan['name']}]")
+                                        continue
+                                    _, year, course = parse_name(reports_plan['name'])
+                                    if str(year) != str(p_year) or str(course) != str(p_course):
+                                        continue
+                                    # РПД
+                                    for _rpd_id, report_rpd in _rpd:
+                                        if url is None:
+                                            url = ''
+                                        url += report_rpd['url'] + '\n'
+                                        if skif_url is None:
+                                            skif_url = ''
+                                        skif_url += str(report_rpd['ФОС'][0]['url']) + '\n'
+                                        if skif is None:
+                                            skif = ''
+                                        skif += pm[report_rpd['ФОС'][0]['exist']] + '\n'
+                                        if comps is None:
+                                            comps = ''
+                                        comps += report_rpd['Компетенции'][0] + '\n'
+                                        if summary is None:
+                                            summary = ''
+                                        summary += pm[report_rpd['Часы'][0]['Правильность часов:']] + '\n'
+                                        if control is None:
+                                            control = ''
+                                        for sr in report_rpd['Часы'][0]['Контроль:']:
+                                            control += f"{sr['Тип контроля']} ({sr['Семестр']} сем.)\n"
+                                        if fos is None:
+                                            fos = ''
+                                        fos += pm[report_rpd['Приложение'][0]['new']] + '\n'
+                                        files.extend(report_rpd['Приложение'][1]['files'])
+                                map_subjs.append([
+                                    i, subject, get_prep(preps, real_subject, p_group),
+                                    None, str(fos).strip(), str(skif).strip(), str(skif).strip(), p_kaf_name.strip(),
+                                    str(url).strip(), str(skif_url).strip(), str(comps).strip(), str(summary).strip(),
+                                    str(control).strip(), files
+                                ])
+                                i += 1
+                sheet_name = f"{p_group} ({p_course}-{str(p_year)[2:]})"
                 if sheet_name not in wb.sheetnames:
                     ws = wb.copy_worksheet(wb['ШАБЛОН'])
                     ws.title = sheet_name
@@ -295,6 +328,122 @@ def plan2excel(plans, preps, departments, fos_status, kaf, save=None):
 
     wb['ШАБЛОН'].sheet_state = 'hidden'
     wb.save(save)
+
+
+def _filter(items, function=None):
+    if function is None:
+        return items.items()
+    return list(filter(lambda item: function(item[1]), items.items()))
+
+
+def plan2stat(plans, preps, departments, reports, kaf, save=None):
+    report = {}
+    for p_group in plans:
+        group_report = {}
+        for p_year in plans[p_group]:
+            year_report = {}
+            for p_course in plans[p_group][p_year]:
+                report_data = {
+                    ALL: 0,
+                    ALL_DONE: 0,
+                    ALL_FOS: 0,
+                    ALL_TEST: 0,
+                    ALL_FOS_OR_TEST: 0,
+                    ANYTHING: 0,
+                    NOTHING: 0,
+                }
+                report_data['stat'] = report_data.copy()
+                course_report = report_data.copy()
+                course_report['наши'] = report_data.copy()
+                course_report['чужие'] = report_data.copy()
+                for p_filename in plans[p_group][p_year][p_course]:
+                    plan = plans[p_group][p_year][p_course][p_filename]
+                    for subject in plan:
+                        # if kaf != plan[subject]['Кафедра']:
+                        #     continue
+                        academic_year = f"{p_year}-{int(p_year) + 1}"
+                        p_kaf_name = get_departament_name(departments, plan[subject]['Кафедра'])
+                        real_subject = plan[subject]['R'] if 'R' in plan[subject] else subject
+
+                        if academic_year not in reports:
+                            print(f"Год: {academic_year} не найден в report")
+                            continue
+                        # Выбор по году
+                        reports_year = reports[academic_year]
+                        _kafs = _filter(reports_year, lambda r: r['name'] == p_kaf_name)
+                        if len(_kafs) == 0:
+                            print(f"Кафедра: {p_kaf_name} не найден в report[{academic_year}]")
+                            continue
+                        # Выбор по кафедре
+                        for _kaf_id, reports_kaf in _kafs:
+                            subject_name_clear = lambda x: x.replace(',', '').replace(' ', '')
+                            rs = subject_name_clear(real_subject)
+                            _subjects = _filter(
+                                reports_kaf['items'],
+                                lambda r: subject_name_clear(r['name']) == rs
+                            )
+                            if len(_subjects) == 0:
+                                print(f"Дисциплина: {real_subject} "
+                                      f"не найдена в report[{academic_year}][{_kaf_id} | {reports_kaf['name']}]")
+                                continue
+                            # Выбор по дисциплине
+                            for _subject_id, reports_subject in _subjects:
+                                _plans = _filter(reports_subject['items'])
+                                if len(_plans) == 0:
+                                    print(f"План не найден в "
+                                          f"report[{academic_year}][{_kaf_id} | {reports_kaf['name']}][{_subject_id}]")
+                                    continue
+                                # Планы
+                                for _plan_id, reports_plan in _plans:
+                                    _rpd = _filter(
+                                        reports_plan['items'],
+                                        lambda r: r['group']['name'] == p_group
+                                    )
+                                    if len(_plans) == 0:
+                                        print(f"РПД не найдено в "
+                                              f"report[{academic_year}][{_kaf_id} | {reports_kaf['name']}]"
+                                              f"[{_subject_id}][{_plan_id} | {reports_plan['name']}]")
+                                        continue
+                                    _, year, course = parse_name(reports_plan['name'])
+                                    if str(year) != str(p_year) or str(course) != str(p_course):
+                                        continue
+                                    # РПД
+                                    for _rpd_id, report_rpd in _rpd:
+                                        fos = report_rpd['Приложение'][0]['new']
+                                        test = report_rpd['ФОС'][0]['exist']
+
+                                        course_report[ALL] += 1
+                                        course_report[ALL_DONE] += int(fos and test)
+                                        course_report[ALL_FOS] += int(fos and not test)
+                                        course_report[ALL_TEST] += int(test and not fos)
+                                        course_report[ALL_FOS_OR_TEST] += int(not fos and test or not test and fos)
+                                        course_report[ANYTHING] += int(fos or test)
+                                        course_report[NOTHING] += int(not fos and not test)
+
+                                        if kaf != plan[subject]['Кафедра']:
+                                            course_report['наши'][ALL] += 1
+                                            course_report['наши'][ALL_DONE] += int(fos and test)
+                                            course_report['наши'][ALL_FOS] += int(fos)
+                                            course_report['наши'][ALL_TEST] += int(test)
+                                            course_report['наши'][ALL_FOS_OR_TEST] += int(not fos or not test)
+                                            course_report['наши'][ANYTHING] += int(fos or test)
+                                            course_report['наши'][NOTHING] += int(not fos and not test)
+                                        else:
+                                            course_report['чужие'][ALL] += 1
+                                            course_report['чужие'][ALL_DONE] += int(fos and test)
+                                            course_report['чужие'][ALL_FOS] += int(fos)
+                                            course_report['чужие'][ALL_TEST] += int(test)
+                                            course_report['чужие'][ALL_FOS_OR_TEST] += int(not fos or not test)
+                                            course_report['чужие'][ANYTHING] += int(fos or test)
+                                            course_report['чужие'][NOTHING] += int(not fos and not test)
+
+
+                year_report[p_course] = course_report
+            group_report[p_year] = year_report
+        report[p_group] = group_report
+    if save:
+        json.to_file(report, save)
+    return report
 
 
 def isnan(x):
